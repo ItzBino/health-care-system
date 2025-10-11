@@ -14,9 +14,13 @@ import {
 export const patientRegister = async (req, res) => {
   try {
     const patient = await register(req.body, req.file);
-    res.status(201).json(patient);
+    res.status(201).json({
+      data: patient,
+      success: true,
+      message: "Registration successful",
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -34,10 +38,15 @@ export const patientLogin = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-    res.status(200).json({ patient, token });
+    res.status(200).json({
+      success: true,
+      data: patient,
+      token,
+      message: "Login successful",
+    });
   } catch (error) {
     console.log(error);
-    res.status(400).json({ success: false, error: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -57,7 +66,7 @@ export const patientById = async (req, res) => {
     const patientId = req.patient.id;
     const patient = await getPatientById(patientId);
     console.log(patient);
-    res.status(200).json({success:true, data:patient});
+    res.status(200).json({ success: true, data: patient });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -68,7 +77,7 @@ export const createProfile = async (req, res) => {
   try {
     const patientId = req.patient.id;
     const patient = await createPatientProfile(patientId, req.body);
-    res.status(200).json({success:true, data:patient});
+    res.status(200).json({ success: true, data: patient });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -79,7 +88,7 @@ export const getProfile = async (req, res) => {
   try {
     const patientId = req.patient.id;
     const patient = await getPatientProfile(patientId);
-    res.status(200).json({success:true, data:patient});
+    res.status(200).json({ success: true, data: patient });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -90,9 +99,10 @@ export const updateProfile = async (req, res) => {
   try {
     const patientId = req.patient.id;
     const patient = await updatePatientProfile(patientId, req.body);
-    res.status(200).json({success:true, data:patient});
+    res.status(200).json({ success: true, data: patient });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });}
+    res.status(400).json({ success: false, error: error.message });
+  }
 };
 
 //Appointment booking
@@ -101,7 +111,7 @@ export const appointments = async (req, res) => {
     const patientId = req.patient.id;
     const docId = req.params.docId;
     const patient = await appointmentBooking(req.body, patientId, docId);
-    res.status(200).json({success:true, data:patient});
+    res.status(200).json({ success: true, data: patient });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -112,9 +122,18 @@ export const getAppointments = async (req, res) => {
   try {
     const patientId = req.patient.id;
     const appointments = await getPatientAppointments(patientId);
-    res.status(200).json({success:true, data:appointments});
+    res.status(200).json({ success: true, data: appointments });
   } catch (error) {
-    res.status(400).json({ success:false, error: error.message });
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+export const getAllDoctors = async (req, res) => {
+  try {
+    const doctors = await getAllDoctors();
+    res.status(200).json({ success: true, data: doctors });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
   }
 };
 

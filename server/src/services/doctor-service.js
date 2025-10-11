@@ -9,9 +9,6 @@ import MedicalReport from "../models/MedicalReport.js";
 //creating doctor user
 export const register = async (body, imageFile) => {
   const { name, email, password } = body;
-  if (!imageFile) {
-    throw new Error("Image is required");
-  }
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new Error("Email already in use");

@@ -9,9 +9,6 @@ import DoctorProfile from "../models/DoctorProfile.js";
 //patient register service
 export const register = async (body, imageFile) => {
   const { name, email, password } = body;
-  if (!imageFile) {
-    throw new Error("Image is required");
-  }
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new Error("Email already in use");
@@ -41,11 +38,11 @@ export const register = async (body, imageFile) => {
     image: imageUrl,
     role: "PATIENT",
   };
-  console.log("Before saving patient");
+  // console.log("Before saving patient");
   const patient = new User(patientData);
-  console.log("User instance created:", patient);
+  // console.log("User instance created:", patient);
   await patient.save();
-  console.log(patient);
+  // console.log(patient);
   return patient;
 };
 
@@ -180,4 +177,18 @@ const appointments = await Appointment.find({
   .populate("patient", "name email image")
   .populate("doctor", "name email image");
   return appointments;
+};
+
+export const fetchDoctors = async () => {
+  const doctors = await DoctorProfile.find().populate({
+    path: "user",
+    select: "name email image emailVerified status",
+    match: {
+      emailVerified: true,
+      status: "APPROVED", // ✅ only approved users
+    },
+  });
+
+  // Filter out any doctor whose user didn’t match
+  return doctors.filter((doc) => doc.user !== null);
 };

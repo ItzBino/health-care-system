@@ -10,7 +10,7 @@ export const patientAuth = async (req, res, next) => {
         req.patient = decoded;
         next();
     } catch (error) {
-        res.status(401).json({ error: error.message });
+        res.status(401).json({ message: error.message });
     }
 };
 
@@ -22,6 +22,6 @@ export const patientRole = async (req, res, next) => {
         }
         next();
     } catch (error) {
-        res.status(401).json({ error: error.message });
+        res.status(401).json({ message: error.message });
     }
 };

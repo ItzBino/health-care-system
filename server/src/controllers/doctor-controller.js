@@ -14,7 +14,7 @@ import {
 export const doctorRegister = async (req, res) => {
   try {
     const doctor = await register(req.body, req.file);
-    res.status(201).json(doctor);
+    res.status(201).json({ success:true, data:doctor, message: "Registration successful" });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -34,7 +34,7 @@ export const doctorLogin = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-    res.status(200).json({ doctor, token });
+    res.status(200).json({ success:true , data:doctor, token, message: "Login successful" });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, error: error.message });
