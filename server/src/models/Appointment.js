@@ -11,7 +11,9 @@ const appointmentSchema = new mongoose.Schema({
     enum: ['REQUESTED', 'CONFIRMED', 'RESCHEDULED', 'CANCELLED', 'COMPLETED'], 
     default: 'REQUESTED' 
   },
-  meetingLink: String,
+  cancelled: { type: Boolean, default: false },
+  isCompleted: { type: Boolean, default: false },
+  payment:{ type: Boolean, default: false },
   notes: String,
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });

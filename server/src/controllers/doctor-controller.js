@@ -7,7 +7,8 @@ import {
   getDoctorProfile,
   updateProfile,
   getBookedAppointments,
-  report
+  healthReport,
+ createPrescription
 } from "../services/doctor-service.js";
 
 //doctor register
@@ -99,17 +100,28 @@ export const getAppointments = async (req, res) => {
 
 
 //medical report
-export const medicalReport = async (req, res) => {
+export const patientReport = async (req, res) => {
   try {
     const doctorId = req.doctor.id;
     const patientId = req.params.pId;
-    const report = await report(doctorId,patientId,req.body);
+    const report = await healthReport(doctorId,patientId,req.body);
     res.status(200).json({success:true, data:report});
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
 }
 
+//prescription
+export const medicalPrescription = async (req, res) => {
+  try {
+    const doctorId = req.doctor.id;
+    const patientId = req.params.pId;
+    const prescription = await createPrescription(doctorId,patientId,req.body);
+    res.status(200).json({success:true, data:prescription});
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+}
 
 
 

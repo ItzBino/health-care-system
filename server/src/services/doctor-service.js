@@ -5,6 +5,7 @@ import validator from "validator";
 import { v2 as cloudinary } from "cloudinary";
 import Appointment from "../models/Appointment.js";
 import MedicalReport from "../models/MedicalReport.js";
+import Prescription from "../models/Prescription.js";
 
 //creating doctor user
 export const register = async (body, imageFile) => {
@@ -63,7 +64,7 @@ export const login = async ({ email, password }) => {
 
 //get doctor by id
 export const getDoctorById = async (doctorId) => {
-  const doctor = await User.findById(doctorId).select("-password -role");
+  const doctor = await User.findById(doctorId).select("-password");
   if(!doctor){
     throw new Error("Doctor not found");
   }
@@ -125,28 +126,29 @@ const appointments = await Appointment.find({
 };
 
 
-export const report = async(doctorId,patientId,body) => {
+export const healthReport = async(doctorId,patientId,body) => {
   const data = {
     patient:patientId,
     doctor:doctorId,
     ...body
   }
-  const report = new MedicalReport(data);
-  await report.save();
-  const reportData = await MedicalReport.findById(report._id).populate("patient","name email image").populate("doctor","name email image");
+  const reportInfo = new MedicalReport(data);
+  await reportInfo.save();
+  const reportData = await MedicalReport.findById(reportInfo._id).populate("patient","name email image").populate("doctor","name email image");
   return reportData;
   
 }
 
-export const prescription = async(doctorId,patientId,body) => {
-  const data = {
-    patient:patientId,
-    doctor:doctorId,
-    ...body
-  }
-  const prescription = new Prescription(data);
-  await prescription.save();
-  const prescriptionData = await Prescription.findById(prescription._id).populate("patient","name email image").populate("doctor","name email image");
+export const createPrescription = async (doctorId, patientId, body) => {
+  const data = { patient: patientId, doctor: doctorId, ...body };
+
+  // rename local variable
+  const newPrescription = new Prescription(data);
+  await newPrescription.save();
+
+  const prescriptionData = await Prescription.findById(newPrescription._id)
+    .populate("patient", "name email image")
+    .populate("doctor", "name email image");
+
   return prescriptionData;
-  
-}
+};

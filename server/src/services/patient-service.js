@@ -5,6 +5,9 @@ import validator from "validator";
 import { v2 as cloudinary } from "cloudinary";
 import Appointment from "../models/Appointment.js";
 import DoctorProfile from "../models/DoctorProfile.js";
+import Prescription from "../models/Prescription.js";
+import MedicalReport from "../models/MedicalReport.js";
+
 
 //patient register service
 export const register = async (body, imageFile) => {
@@ -72,7 +75,7 @@ export const login = async ({ email, password }) => {
 
 //get patient by id
 export const getPatientById = async (patientId) => {
-  const patient = await User.findById(patientId).select("-password -role");
+  const patient = await User.findById(patientId).select("-password");
   return patient;
 };
 
@@ -122,41 +125,53 @@ export const updatePatientProfile = async (patientId, body) => {
 
 
 //Appointment booking
+
 export const appointmentBooking = async (body, patientId, docId) => {
-  // 1. Check if doctor exists
+  // 1️⃣ Check if doctor exists
   const doctor = await DoctorProfile.findOne({ user: docId });
   if (!doctor) throw new Error("Doctor not found");
 
-  // 2. Check if selected date is blocked
+  // 2️⃣ Check if selected date is blocked (doctor day-off or holiday)
   const bookingDate = new Date(body.start).toISOString().split("T")[0];
   const isBlocked = doctor.blockedDates.some(date =>
     new Date(date).toISOString().split("T")[0] === bookingDate
   );
   if (isBlocked) throw new Error("Doctor is not available on this date");
+
+  // 3️⃣ Prevent same slot double booking
   const existing = await Appointment.findOne({
     doctor: docId,
     start: body.start
   });
+  if (existing) throw new Error("This slot is already booked");
 
-  if (existing) throw new Error("This slot is already booked")
+  // 4️⃣ Prepare appointment data
   const data = {
     ...body,
     patient: patientId,
     doctor: docId,
-    createdBy: patientId
+    createdBy: patientId,
   };
 
-  // 5. Auto-calc `end` if needed (30 mins)
+  // 5️⃣ Auto-calculate `end` time (based on doctor’s slot duration or default 30 mins)
+  const slotMinutes =
+    doctor.schedule.find(
+      (s) => s.dayOfWeek === new Date(body.start).getDay()
+    )?.slotMinutes || 30;
+
   if (!data.end) {
-    const slotMinutes = doctor.schedule.find(s => s.dayOfWeek === new Date(body.start).getDay())?.slotMinutes || 30;
     data.end = new Date(new Date(body.start).getTime() + slotMinutes * 60000);
   }
 
-  // 6. Save appointment
+  // 6️⃣ Save appointment
   let appointmentData = new Appointment(data);
   await appointmentData.save();
 
-  // 7. Populate patient & doctor details
+  // 7️⃣ Add this specific time to doctor’s blockedDates to prevent re-booking
+  doctor.blockedDates.push(new Date(body.start));
+  await doctor.save();
+
+  // 8️⃣ Populate patient & doctor details before returning
   appointmentData = await Appointment.findById(appointmentData._id)
     .populate("patient", "name email image")
     .populate("doctor", "name email image");
@@ -165,12 +180,30 @@ export const appointmentBooking = async (body, patientId, docId) => {
 };
 
 
+//AppointmentCancelling
+// export const cancelAppointment = async (appointmentId) => {
+//   const appointment = await Appointment.findById(appointmentId);
+//   if (!appointment) throw new Error("Appointment not found");
+
+//   appointment.status = "CANCELLED";
+//   appointment.cancelled = true;
+//   await appointment.save();
+
+//   const doctor = await DoctorProfile.findOne({ user: appointment.doctor });
+//   doctor.blockedDates = doctor.blockedDates.filter(
+//     (d) => new Date(d).getTime() !== new Date(appointment.start).getTime()
+//   );
+//   await doctor.save();
+
+//   return appointment;
+// };
+
+
 //get patient appointments
 export const getPatientAppointments = async (patientId) => {
  const now = new Date();
 const appointments = await Appointment.find({
-  patient: patientId,
-  start: { $gte: now }, // only upcoming appointments
+  patient: patientId, 
   status: { $in: ["REQUESTED", "CONFIRMED", "RESCHEDULED"] }
 })
   .sort({ start: 1 })
@@ -192,3 +225,28 @@ export const fetchDoctors = async () => {
   // Filter out any doctor whose user didn’t match
   return doctors.filter((doc) => doc.user !== null);
 };
+
+export const getPrescriptions = async (patientId) => {
+  const prescriptionData = await Prescription.find({
+    patient: patientId,
+    isCompleted: false   // ✅ filter by completion instead of status
+  })
+    .populate("patient", "name email image")
+    .populate("doctor", "name email image");
+
+  return prescriptionData;
+};
+
+
+export const getMedicalRecords = async (patientId) => {
+  const data = await MedicalReport.find({
+    patient:patientId,
+   status: "PENDING"}
+  )
+    .populate("patient", "name email image")
+    .populate("doctor", "name email image")
+    .sort({ visitDate: -1 }); // latest first
+
+  return data; // if no records, returns []
+};
+

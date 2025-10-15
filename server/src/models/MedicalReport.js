@@ -8,7 +8,8 @@ const recordSchema = new mongoose.Schema({
   vitals: { height: Number, weight: Number, bp: String, pulse: Number, temp: Number },
   treatmentPlan: String,
   // files: [{ name: String, url: String }], // gridfs/s3 URLs
-  followUpDate: Date
+  followUpDate: Date,
+   status: { type: String, enum: ['PENDING', 'COMPLETED'], default: 'PENDING' } 
 }, { timestamps: true });
 
-export default mongoose.model('MedicalRecord', recordSchema);
+export default mongoose.model('MedicalReport', recordSchema);

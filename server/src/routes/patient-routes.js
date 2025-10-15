@@ -17,6 +17,8 @@ router.get('/get-profile',patientAuth,patientRole, patientController.getProfile)
 router.patch('/update-profile',patientAuth,patientRole, patientController.updateProfile);
 router.post('/book-appointment/:docId',patientAuth,patientRole,patientController.appointments);
 router.post('/my-appointment',patientAuth,patientRole,patientController.getAppointments);
+router.get('/prescription',patientAuth,patientRole,patientController.fetchPrescription);
+router.get('/health-report',patientAuth,patientRole,patientController.fetchMedicalReport);
 router.post('/logout', patientAuth,patientController.logout);
 
 
