@@ -92,7 +92,11 @@ const PatientProfileForm = () => {
                   <User className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                  {isEditMode ? "Complete Your Profile" : "Patient Profile"}
+                 {!hasProfile
+    ? "Complete Your Profile"
+    : editMode
+      ? "Edit Profile"
+      : "Your Profile"}
                 </h2>
               </div>
               {!isEditMode && (

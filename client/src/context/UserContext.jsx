@@ -10,6 +10,8 @@ const UserProvider = ({ children }) => {
   const [prescription, setPrescription] = useState([]);
   const [report, setReport] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasProfile, setHasProfile] = useState(false);
+
   const fetchDoctors = async () => {
     try {
       const response = await api.get("/api/patient/doctor-profiles");
@@ -29,7 +31,8 @@ const UserProvider = ({ children }) => {
   const createPatientProfile = async (credentials) => {
     try {
       let response;
-      if (!isEditMode) {
+      if (hasProfile) {
+        // update existing profile
         response = await api.patch("/api/patient/update-profile", credentials);
       } else {
         response = await api.post("/api/patient/create-profile", credentials);
@@ -38,6 +41,8 @@ const UserProvider = ({ children }) => {
       // console.log(response.data.data);
       if (response.data.success) {
         setPatient(response.data.data);
+        setHasProfile(true);
+        setEditMode(false);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -49,16 +54,18 @@ const UserProvider = ({ children }) => {
     try {
       const response = await api.get("/api/patient/get-profile");
       // console.log(response.data.data);
-      if (response.data.success) {
+      if (response.data.success && response.data.data) {
         setPatient(response.data.data);
-      }
-      if(response.data.data){
-        setIsEditMode(true);
-      }else{
+        setHasProfile(true);
         setIsEditMode(false);
+      } else {
+        setHasProfile(false);
+        setIsEditMode(true);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
+      setHasProfile(false);
+      setEditMode(true);
     } finally {
       setLoading(false);
     }
@@ -104,8 +111,6 @@ const UserProvider = ({ children }) => {
   useEffect(() => {
     fetchPatientReport();
   }, []);
-
-  
 
   const value = {
     doctor,

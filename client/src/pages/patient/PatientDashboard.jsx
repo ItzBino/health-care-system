@@ -195,10 +195,10 @@ const PatientDashboard = () => {
                       </div>
                     </div>
                     {/* Edit button */}
-                    <button className="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base whitespace-nowrap">
+                   <NavLink to='/settings'><button className="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base whitespace-nowrap">
                       <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                       Edit Profile
-                    </button>
+                    </button></NavLink> 
                   </div>
                 </div>
               </div>
