@@ -6,30 +6,32 @@ import { v2 as cloudinary } from "cloudinary";
 import Appointment from "../models/Appointment.js";
 import MedicalReport from "../models/MedicalReport.js";
 import Prescription from "../models/Prescription.js";
+import PatientProfile from "../models/PatientProfile.js";
 
 //creating doctor user
 export const register = async (body, imageFile) => {
   const { name, email, password } = body;
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw new Error("Email already in use");
-  }
-  if (!name || !email || !password) {
-    throw new Error("All fields are required");
-  }
 
-  if (!validator.isEmail(email)) {
-    throw new Error("Invalid email");
-  }
-  if (password < 6) {
-    throw new Error("Password must be at least 6 characters");
-  }
+  const existingUser = await User.findOne({ email });
+  if (existingUser) throw new Error("Email already in use");
+  if (!name || !email || !password) throw new Error("All fields are required");
+
+  if (!validator.isEmail(email)) throw new Error("Invalid email");
+  if (password.length < 6) throw new Error("Password must be at least 6 characters");
+
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
-    resource_type: "image",
-  });
-  const imageUrl = imageUpload.secure_url;
+
+  // Default image
+  let imageUrl = 'https://res.cloudinary.com/dyrukgnno/image/upload/v1758117051/jcfmctqa3y6i0y8rfels.jpg';
+
+  // Only upload if imageFile exists
+  if (imageFile && imageFile.path) {
+    const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
+      resource_type: "image",
+    });
+    imageUrl = imageUpload.secure_url;
+  }
 
   const doctorData = {
     ...body,
@@ -39,7 +41,8 @@ export const register = async (body, imageFile) => {
     image: imageUrl,
     role: "DOCTOR",
   };
-  let doctor = new User(doctorData);
+
+  const doctor = new User(doctorData);
   await doctor.save();
   return doctor;
 };
@@ -110,20 +113,29 @@ export const updateProfile = async (doctorId, body) => {
 
 //get patient booked for appointment
 export const getBookedAppointments = async (doctorId) => {
- const now = new Date();
-const appointments = await Appointment.find({
-  doctor: doctorId,          
-  status: { $in: ["REQUESTED","CONFIRMED","RESCHEDULED"] }
-})
-.sort({ start: 1 })
-.populate("patient", "name email image")
-.populate("doctor", "name email image");
+  
+  const appointments = await Appointment.find({
+    doctor: doctorId,
+    isCompleted: false,
+  
+  })
+  .populate("patient", "name email image")
+  .populate("doctor", "name email image");
 
- if(!appointments){
-  throw new Error("Appointments not found");
- }
+  if (appointments.length === 0) {
+    throw new Error("No appointments found");
+  }
+
   return appointments;
 };
+
+export const getAllPatientProfiles = async(patientId) => {
+  const patient = await PatientProfile.findOne({user:patientId}).populate("user","name email image");
+  if (!patient) {
+    throw new Error("Patient not found");
+  }
+  return patient;
+}
 
 
 export const healthReport = async(doctorId,patientId,body) => {

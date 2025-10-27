@@ -8,7 +8,8 @@ import {
   updateProfile,
   getBookedAppointments,
   healthReport,
- createPrescription
+ createPrescription,
+ getAllPatientProfiles
 } from "../services/doctor-service.js";
 
 //doctor register
@@ -98,6 +99,15 @@ export const getAppointments = async (req, res) => {
   }
 };
 
+export const fetchAllPatients = async (req, res) => {
+  try {
+    const {patientId} = req.params
+    const patient = await getAllPatientProfiles(patientId)
+    res.status(200).json({ success: true, data: patient })
+  } catch (error) {
+    res.status(400).json({ success: false, data: error.message })
+  }
+}
 
 //medical report
 export const patientReport = async (req, res) => {
@@ -105,7 +115,7 @@ export const patientReport = async (req, res) => {
     const doctorId = req.doctor.id;
     const patientId = req.params.pId;
     const report = await healthReport(doctorId,patientId,req.body);
-    res.status(200).json({success:true, data:report});
+    res.status(200).json({success:true, data:report,message: "Report created successfully"});
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -117,7 +127,7 @@ export const medicalPrescription = async (req, res) => {
     const doctorId = req.doctor.id;
     const patientId = req.params.pId;
     const prescription = await createPrescription(doctorId,patientId,req.body);
-    res.status(200).json({success:true, data:prescription});
+    res.status(200).json({success:true, data:prescription ,message: "Prescription created successfully"});
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }

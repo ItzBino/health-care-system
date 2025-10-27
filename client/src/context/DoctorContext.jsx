@@ -9,6 +9,9 @@ const DoctorProvider = ({ children }) => {
   const [hasProfile, setHasProfile] = useState(false);
   const [editMode, setEditMode] = useState(true);
   const [loading, setLoading] = useState(true);
+const [patientId , setPatientId] = useState(null);
+const [patientDetails, setPatientDetails] = useState(null);
+
   const fetchDoctorProfile = async () => {
     setLoading(true);
     try {
@@ -23,7 +26,7 @@ const DoctorProvider = ({ children }) => {
         setEditMode(true); // show editable form for new users
       }
     } catch (error) {
-      console.error("Error fetching patient profile:", error);
+      console.error("Error fetching doctor profile:", error);
       setHasProfile(false);
       setEditMode(true);
     } finally {
@@ -54,7 +57,7 @@ const DoctorProvider = ({ children }) => {
         setEditMode(false);
       }
     } catch (error) {
-      console.error("Error saving patient profile:", error);
+      console.error("Error saving doctor profile:", error);
       throw error
     }
     finally{
@@ -62,6 +65,26 @@ const DoctorProvider = ({ children }) => {
     }
   };
 
+  const fetchAllPatientProfiles = async () => {
+    try {
+      const response = await api.get(`/api/doctor/patient-profiles/${patientId}`);
+      if (response.data.success && response.data.data) {
+         setPatientDetails(response.data.data)
+         console.log("patient Details: ", response.data.data)
+      } else {
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching patient profiles:", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    if (patientId) {
+      fetchAllPatientProfiles();
+    }
+  }, [patientId]);
 
   const value={
     doctorProfile,
@@ -72,7 +95,11 @@ const DoctorProvider = ({ children }) => {
     setEditMode,
     loading,
     setLoading,
-    createDoctorProfile
+    createDoctorProfile,
+    patientId,
+    setPatientId,
+    fetchAllPatientProfiles,
+    patientDetails
   }
   return <DoctorContext.Provider value={value}>{children}</DoctorContext.Provider>;
 };

@@ -36,14 +36,14 @@ const PatientProfile = () => {
     return (
       <div className="p-8 text-center">
         <Info className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <p className="text-gray-500">No patient profile data available</p>
+        <p className="text-gray-500">Complete Your Profile</p>
       </div>
     );
   }
 
   return (
     <div className="p-6 lg:p-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Complete Profile Overview</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Profile Overview</h2>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Personal Information */}

@@ -6,11 +6,11 @@ import {
   createPatientProfile,
   getPatientProfile,
   updatePatientProfile,
-  appointmentBooking,
   getPatientAppointments,
   fetchDoctors,
   getPrescriptions,
-  getMedicalRecords
+  getMedicalRecords,
+  getDoctorProfileWithBookedTimes
 } from "../services/patient-service.js";
 
 //Patient register
@@ -108,17 +108,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-//Appointment booking
-export const appointments = async (req, res) => {
-  try {
-    const patientId = req.patient.id;
-    const docId = req.params.docId;
-    const patient = await appointmentBooking(req.body, patientId, docId);
-    res.status(200).json({ success: true, data: patient });
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-};
+
 
 //get booked appointment
 export const getAppointments = async (req, res) => {
@@ -130,6 +120,29 @@ export const getAppointments = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
+
+
+
+/**
+ * GET /api/patient/:doctorId/booked
+ */
+export const getDoctorWithBookedTimes = async (req, res) => {
+  const { doctorId } = req.params;
+
+  try {
+    const { doctorProfile, bookedTimes } = await getDoctorProfileWithBookedTimes(doctorId);
+    return res.status(200).json({ doctorProfile, bookedTimes });
+  } catch (error) {
+    console.error("Error fetching doctor profile and bookings:", error);
+
+    if (error.message === "Invalid doctor ID") return res.status(400).json({ message: error.message });
+    if (error.message === "Doctor not found") return res.status(404).json({ message: error.message });
+
+    return res.status(500).json({ message: "Internal server error while fetching doctor data." });
+  }
+};
+
 
 export const fetchPrescription = async (req, res) => {
   try {

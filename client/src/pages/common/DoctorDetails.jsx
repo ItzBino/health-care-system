@@ -160,7 +160,7 @@ const DoctorDetails = () => {
       <div className="bg-white border-b sticky top-[57px] z-10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-8 overflow-x-auto">
-            {["overview", "schedule", "education"].map((tab) => (
+            {["overview", "education"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -199,26 +199,6 @@ const DoctorDetails = () => {
                   </p>
                 </div>
 
-                {/* Specializations */}
-                <div className="bg-white rounded-xl shadow-md p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Award className="w-6 h-6 text-blue-600" />
-                    Specializations
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      "General Consultation",
-                      "Preventive Care",
-                      "Chronic Disease Management",
-                      "Emergency Medicine"
-                    ].map((spec, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span className="text-gray-700">{spec}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
                 {/* Services Offered */}
                 <div className="bg-white rounded-xl shadow-md p-6">
@@ -242,47 +222,6 @@ const DoctorDetails = () => {
               </>
             )}
 
-            {/* Schedule Tab */}
-            {activeTab === "schedule" && (
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Clock className="w-6 h-6 text-blue-600" />
-                  Weekly Schedule
-                </h2>
-                <div className="space-y-3">
-                  {days.map((day, index) => {
-                    const schedule = doctorInfo.schedule?.find((s) => s.dayOfWeek === index);
-                    const isAvailable = schedule && schedule.start && schedule.end;
-                    
-                    return (
-                      <div
-                        key={day}
-                        className={`flex items-center justify-between p-4 rounded-lg border ${
-                          isAvailable 
-                            ? "border-green-200 bg-green-50" 
-                            : "border-gray-200 bg-gray-50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-3 h-3 rounded-full ${
-                            isAvailable ? "bg-green-500" : "bg-gray-400"
-                          }`}></div>
-                          <span className="font-medium text-gray-900">{day}</span>
-                        </div>
-                        <span className={`font-medium ${
-                          isAvailable ? "text-green-700" : "text-gray-500"
-                        }`}>
-                          {isAvailable
-                            ? `${formatTime(schedule.start)} - ${formatTime(schedule.end)}`
-                            : "Unavailable"}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* Education Tab */}
             {activeTab === "education" && (
               <div className="bg-white rounded-xl shadow-md p-6">
@@ -299,32 +238,22 @@ const DoctorDetails = () => {
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
-                          <p className="text-gray-600">{edu.institution}</p>
-                          <span className="text-sm text-gray-500">{edu.yearOfCompletion}</span>
+                          <p className="text-gray-600">{edu.college}</p>
+                          <span className="text-sm text-gray-500">{edu.passoutYear}</span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    // Default education if not provided
-                    [
-                      { degree: "MBBS", institution: "Medical College", yearOfCompletion: "2010" },
-                      { degree: "MD - General Medicine", institution: "Medical University", yearOfCompletion: "2014" },
-                    ].map((edu, idx) => (
+                   
                       <div key={idx} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <GraduationCap className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
-                          <p className="text-gray-600">{edu.institution}</p>
-                          <span className="text-sm text-gray-500">{edu.yearOfCompletion}</span>
-                        </div>
+                       <p>Not Provided</p>
                       </div>
-                    ))
-                  )}
+                    )}
+                  
                 </div>
+                  
               </div>
-            )}
+                  )}
           </div>
 
           {/* Right Sidebar */}
@@ -344,7 +273,7 @@ const DoctorDetails = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Clock className="w-5 h-5" />
-                    <span>Next Available: Today, 3:00 PM</span>
+                    <span>{doctorInfo.available ? "Available Today 10 AM - 8:30 PM book before slot gets booked" : "Not Available"} </span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <Building className="w-5 h-5" />

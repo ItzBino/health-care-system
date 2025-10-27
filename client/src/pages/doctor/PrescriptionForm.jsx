@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useContext, useState, useEffect } from "react";
+import { api } from "../../api/auth"
 import {
   Pill,
   Plus,
@@ -30,35 +30,42 @@ import {
   NotebookPen,
   Zap
 } from 'lucide-react';
+import { useParams } from "react-router-dom";
+import { DoctorContext } from "../../context/DoctorContext";
 
-const PrescriptionForm = ({ patientId, doctorId, onSuccess }) => {
+const PrescriptionForm = () => {
   const [medications, setMedications] = useState([
     { name: "", dosage: "", frequency: "", duration: "", notes: "" },
   ]);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [expandedCards, setExpandedCards] = useState([0]);
   const [prescriptionNotes, setPrescriptionNotes] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
+  const {patientId, setPatientId,patientDetails,doctorProfile} = useContext(DoctorContext)
+  const { patientId: paramId } = useParams();
 
-  // Sample patient and doctor data (replace with actual data)
-  const patientData = {
-    name: "John Doe",
-    age: 45,
-    gender: "Male",
-    allergies: ["Penicillin", "Aspirin"],
-    bloodGroup: "O+",
-    id: "PAT-001234"
-  };
+   useEffect(() => {
+    if (paramId) setPatientId(paramId);
+  }, [paramId]);
 
-  const doctorData = {
-    name: "Dr. Sarah Johnson",
-    specialization: "General Medicine",
-    license: "MD-123456",
-    hospital: "City Medical Center"
-  };
+  
+
+ const calculateAge = (dob) => {
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+
+  return age;
+};
+
 
   // Common medications for quick selection
   const commonMedications = [
@@ -157,24 +164,20 @@ const PrescriptionForm = ({ patientId, doctorId, onSuccess }) => {
 
     try {
       const payload = {
-        patient: patientId,
-        doctor: doctorId,
         medications: validMedications,
-        isCompleted,
         prescriptionNotes,
         followUpDate
       };
 
-      const res = await axios.post("/api/prescriptions", payload);
+      const res = await api.post(`/api/doctor/prescription/${patientId}`, payload);
 
       if (res.data.success) {
         setMessage("Prescription created successfully!");
         setMessageType("success");
         setMedications([{ name: "", dosage: "", frequency: "", duration: "", notes: "" }]);
-        setIsCompleted(false);
         setPrescriptionNotes("");
         setFollowUpDate("");
-        if (onSuccess) onSuccess();
+       alert(res.data.message)
       }
     } catch (err) {
       console.error(err);
@@ -184,6 +187,8 @@ const PrescriptionForm = ({ patientId, doctorId, onSuccess }) => {
       setLoading(false);
     }
   };
+
+   
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
@@ -423,18 +428,7 @@ const PrescriptionForm = ({ patientId, doctorId, onSuccess }) => {
                   </div>
 
                   {/* Completion Status */}
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                    <input
-                      type="checkbox"
-                      id="isCompleted"
-                      checked={isCompleted}
-                      onChange={(e) => setIsCompleted(e.target.checked)}
-                      className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor="isCompleted" className="font-medium text-gray-700 cursor-pointer">
-                      Mark prescription as completed
-                    </label>
-                  </div>
+                
                 </div>
               </div>
 
@@ -501,36 +495,33 @@ const PrescriptionForm = ({ patientId, doctorId, onSuccess }) => {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold text-gray-800">{patientData.name}</p>
+                  <p className="font-semibold text-gray-800">{patientDetails?.user.name}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-sm text-gray-500">Age</p>
-                    <p className="font-semibold text-gray-800">{patientData.age} years</p>
+                    <p className="font-semibold text-gray-800">{patientDetails?.dob 
+                    ? calculateAge(patientDetails.dob):"N/A"} years</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Gender</p>
-                    <p className="font-semibold text-gray-800">{patientData.gender}</p>
+                    <p className="font-semibold text-gray-800">{patientDetails?.gender}</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Patient ID</p>
-                  <p className="font-mono text-sm text-gray-800">{patientData.id}</p>
-                </div>
-                <div>
                   <p className="text-sm text-gray-500">Blood Group</p>
-                  <p className="font-semibold text-gray-800">{patientData.bloodGroup}</p>
+                  <p className="font-semibold text-gray-800">{patientDetails?.bloodGroup}</p>
                 </div>
                 
                 {/* Allergies Alert */}
-                {patientData.allergies.length > 0 && (
+                {patientDetails?.allergies.length > 0 && (
                   <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                     <div className="flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-red-800">Allergies</p>
                         <div className="mt-1">
-                          {patientData.allergies.map((allergy, idx) => (
+                          {patientDetails?.allergies.map((allergy, idx) => (
                             <span key={idx} className="inline-block text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full mr-2 mt-1">
                               {allergy}
                             </span>
@@ -552,19 +543,19 @@ const PrescriptionForm = ({ patientId, doctorId, onSuccess }) => {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold text-gray-800">{doctorData.name}</p>
+                  <p className="font-semibold text-gray-800">{doctorProfile?.user.name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Specialization</p>
-                  <p className="font-semibold text-gray-800">{doctorData.specialization}</p>
+                  <p className="font-semibold text-gray-800">{doctorProfile?.specialization}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">License</p>
-                  <p className="font-mono text-sm text-gray-800">{doctorData.license}</p>
+                  <p className="font-mono text-sm text-gray-800">{doctorProfile?.licenseNumber}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Hospital</p>
-                  <p className="font-semibold text-gray-800">{doctorData.hospital}</p>
+                  <p className="font-semibold text-gray-800">City Medical Center</p>
                 </div>
               </div>
             </div>

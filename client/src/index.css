@@ -94,3 +94,131 @@ html, body{
     linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+
+/* Navbar */
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+      
+
+/* Register */
+
+ @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        .animate-modalSlideIn {
+          animation: modalSlideIn 0.3s ease-out;
+        }
+
+      
+    /* Login */
+
+    
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        @keyframes scaleIn {
+          from {
+            transform: scale(0);
+          }
+          to {
+            transform: scale(1);
+          }
+        }
+        @keyframes shake {
+          0%, 100% {
+            transform: translateX(0);
+          }
+          10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-2px);
+          }
+          20%, 40%, 60%, 80% {
+            transform: translateX(2px);
+          }
+        }
+        .animate-modalSlideIn {
+          animation: modalSlideIn 0.3s ease-out;
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.2s ease-out;
+        }
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+      
+
+        /* Doctor Details  */
+
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+      
+        /* booking page  */
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      
+
+        /* prescription */
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f3f4f6;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af;
+        }

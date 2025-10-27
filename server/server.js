@@ -6,7 +6,8 @@ import connectDB from './config/database.js'
 import connectCloudinary from './config/cloudinary.js'
 import patientRoute from './src/routes/patient-routes.js'
 import doctorRoute from './src/routes/doctor-routes.js'
-// import adminRoute from './src/routes/admin-routes'
+import adminRoute from './src/routes/admin-routes.js'
+import appointmentRoute from './src/routes/appointment-routes.js'
 
 
 // app config
@@ -16,11 +17,13 @@ connectDB()
 connectCloudinary()
 
 // middlewares
-app.use(express.json())
+app.use("/api/appointments/webhook", express.raw({ type: "application/json" }));
+app.use(express.json()); // ✅ must come BEFORE routes
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true, // allow cookies
+  origin: [process.env.CLIENT_URL, process.env.ADMIN_URL], // add multiple if needed
+  credentials: true,
 }));
+
 app.use(cookieParser())
 
 
@@ -30,7 +33,8 @@ app.get('/', (req, res) => {
 })
 app.use('/api/patient', patientRoute)
 app.use('/api/doctor', doctorRoute)
-// app.use('/api/admin', adminRoute)
+app.use('/api/admin', adminRoute)
+app.use('/api/book-appointment',appointmentRoute)
 
 // server
 const port = process.env.PORT || 3000

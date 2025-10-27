@@ -15,6 +15,7 @@ router.post('/create-profile',doctorAuth,doctorRole, doctorController.doctorProf
 router.get('/get-profile',doctorAuth,doctorRole, doctorController.getProfile);
 router.patch('/update-profile',doctorAuth,doctorRole, doctorController.profileUpdation);
 router.get('/appointment',doctorAuth,doctorRole,doctorController.getAppointments);
+router.get('/patient-profiles/:patientId',doctorAuth,doctorRole,doctorController.fetchAllPatients);
 router.post('/report/:pId',doctorAuth,doctorRole,doctorController.patientReport);
 router.post('/prescription/:pId',doctorAuth,doctorRole,doctorController.medicalPrescription);
 router.post('/logout', doctorAuth,doctorController.logout);

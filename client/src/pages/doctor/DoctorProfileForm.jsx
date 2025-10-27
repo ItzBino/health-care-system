@@ -1,8 +1,121 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { DoctorContext } from "../../context/DoctorContext";
-import { EditIcon } from "lucide-react";
+import {
+  EditIcon,
+  Save,
+  X,
+  Plus,
+  Calendar,
+  GraduationCap,
+  ShieldCheck,
+  Lock,
+  User,
+} from "lucide-react";
 
-const DoctorProfileForm = ({ doctorId }) => {
+// DisplayProfile Component
+const DisplayProfile = ({ doctorProfile, onEdit }) => {
+  if (!doctorProfile)
+    return <p className="text-gray-500 italic">No profile data found.</p>;
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex justify-between items-center border-b pb-4 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Doctor Profile</h2>
+        <button
+          onClick={onEdit}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all"
+        >
+          <EditIcon className="w-4 h-4" /> Edit
+        </button>
+      </div>
+
+      {/* Basic Information */}
+      <section>
+        <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700 mb-3">
+          <User className="w-5 h-5 text-blue-600" /> Basic Information
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <p>
+            <strong>Specialization:</strong> {doctorProfile.specialization}
+          </p>
+          <p>
+            <strong>License Number:</strong> {doctorProfile.licenseNumber}
+          </p>
+          <p>
+            <strong>Clinic Location:</strong> {doctorProfile.clinicLocation}
+          </p>
+          <p>
+            <strong>Phone Number:</strong> {doctorProfile.phoneNumber}
+          </p>
+          <p>
+            <strong>Bio:</strong> {doctorProfile.bio}
+          </p>
+          <p>
+            <strong>Fees:</strong> ₹{doctorProfile.fees}
+          </p>
+          <p>
+            <strong>Experience:</strong> {doctorProfile.experienceYears} years
+          </p>
+        </div>
+      </section>
+
+      {/* Education */}
+      {doctorProfile.education?.length > 0 && (
+        <section>
+          <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700 mb-3">
+            <GraduationCap className="w-5 h-5 text-blue-600" /> Education
+          </h3>
+          {doctorProfile.education.map((edu, i) => (
+            <p key={i}>
+              {edu.degree} — {edu.college} ({edu.passoutYear})
+            </p>
+          ))}
+        </section>
+      )}
+
+      {/* Insurance */}
+      {doctorProfile.insurance?.length > 0 && (
+        <section>
+          <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700 mb-3">
+            <ShieldCheck className="w-5 h-5 text-blue-600" /> Insurance
+            Providers
+          </h3>
+          <ul className="list-disc ml-6">
+            {doctorProfile.insurance.map((provider, i) => (
+              <li key={i}>{provider}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+
+      {/* Verification Status */}
+      {doctorProfile.verificationStatus && (
+        <section>
+          <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700">
+            <Lock className="w-5 h-5 text-blue-600" /> Verification Status
+          </h3>
+          <p className="mt-1 text-gray-600">
+            {doctorProfile.verificationStatus}
+          </p>
+        </section>
+      )}
+    </div>
+  );
+};
+
+// DoctorProfileForm Component
+const DoctorProfileForm = () => {
+  const {
+    createDoctorProfile,
+    doctorProfile,
+    loading,
+    hasProfile,
+    editMode,
+    setEditMode,
+  } = useContext(DoctorContext);
+
   const [formData, setFormData] = useState({
     specialization: "",
     licenseNumber: "",
@@ -13,40 +126,40 @@ const DoctorProfileForm = ({ doctorId }) => {
     phoneNumber: "",
     education: [{ degree: "", college: "", passoutYear: "" }],
     insurance: [""],
-    schedule: [{ dayOfWeek: 1, start: "09:00", end: "12:00", slotMinutes: 30 }],
   });
 
-  const {
-    createDoctorProfile,
-    doctorProfile,
-    setDoctorProfile,
-    loading,
-    hasProfile,
-    editMode,
-    setEditMode,
-  } = useContext(DoctorContext);
+  // Prefill form for editing
+  useEffect(() => {
+    if (doctorProfile && hasProfile) {
+      setFormData({
+        specialization: doctorProfile.specialization || "",
+        licenseNumber: doctorProfile.licenseNumber || "",
+        clinicLocation: doctorProfile.clinicLocation || "",
+        fees: doctorProfile.fees || "",
+        experienceYears: doctorProfile.experienceYears || "",
+        bio: doctorProfile.bio || "",
+        phoneNumber: doctorProfile.phoneNumber || "",
+        education: doctorProfile.education?.length
+          ? doctorProfile.education
+          : [{ degree: "", college: "", passoutYear: "" }],
+        insurance: doctorProfile.insurance?.length
+          ? doctorProfile.insurance
+          : [""],
+      });
+    }
+  }, [doctorProfile, hasProfile]);
 
-  // ✅ Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle nested education changes
   const handleEducationChange = (index, field, value) => {
     const updated = [...formData.education];
     updated[index][field] = value;
     setFormData((prev) => ({ ...prev, education: updated }));
   };
 
-  // ✅ Handle schedule change
-  const handleScheduleChange = (index, field, value) => {
-    const updated = [...formData.schedule];
-    updated[index][field] = value;
-    setFormData((prev) => ({ ...prev, schedule: updated }));
-  };
-
-  // ✅ Add/Remove education rows
   const addEducation = () => {
     setFormData((prev) => ({
       ...prev,
@@ -62,28 +175,29 @@ const DoctorProfileForm = ({ doctorId }) => {
     setFormData((prev) => ({ ...prev, education: updated }));
   };
 
-  // ✅ Add/Remove schedule rows
-  const addSchedule = () => {
-    setFormData((prev) => ({
-      ...prev,
-      schedule: [
-        ...prev.schedule,
-        { dayOfWeek: 1, start: "09:00", end: "12:00", slotMinutes: 30 },
-      ],
-    }));
+  const handleInsuranceChange = (index, value) => {
+    const updated = [...formData.insurance];
+    updated[index] = value;
+    setFormData((prev) => ({ ...prev, insurance: updated }));
   };
 
-  const removeSchedule = (index) => {
-    const updated = formData.schedule.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, schedule: updated }));
+  const addInsurance = () => {
+    setFormData((prev) => ({ ...prev, insurance: [...prev.insurance, ""] }));
   };
 
-  // ✅ Submit form
+  const removeInsurance = (index) => {
+    const updated = formData.insurance.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, insurance: updated }));
+  };
+
+ 
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      createDoctorProfile(formData);
+      await createDoctorProfile(formData);
     } catch (err) {
       console.error(err);
       alert("Error saving profile");
@@ -91,127 +205,341 @@ const DoctorProfileForm = ({ doctorId }) => {
   };
 
   const days = [
-    "Sunday",
     "Monday",
     "Tuesday",
     "Wednesday",
     "Thursday",
     "Friday",
     "Saturday",
+    "Sunday",
   ];
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-8">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-700">
-        {!hasProfile
-          ? "Complete Your Profile"
-          : editMode
-          ? "Edit Profile"
-          : "Your Profile"}
-      </h2>
-      <div>
-        {!editMode && (
-          <button
-            type="button"
-            onClick={() => setEditMode(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+        {hasProfile ? (
+          editMode ? (
+            // Edit Form
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Basic Info */}
+       <section>
+  <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700 mb-3">
+    <User className="w-5 h-5 text-blue-600" /> Basic Information
+  </h3>
+
+  {/* Grid layout for fields */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {/* Text inputs */}
+    {["specialization", "licenseNumber", "clinicLocation", "phoneNumber"].map(
+      (field) => (
+        <div key={field} className="flex flex-col gap-1">
+          <label
+            htmlFor={field}
+            className="font-medium capitalize text-gray-700"
           >
-            <EditIcon className="w-5 h-5" />
-            Edit Profile
-          </button>
-        )}
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Info */}
-        <div className="grid grid-cols-2 gap-4">
-          {editMode ? (
-            // Edit Mode
-            <>
-              <input
-                name="specialization"
-                placeholder="Specialization"
-                value={formData.specialization}
-                onChange={handleChange}
-                className="border p-3 rounded-lg"
-              />
-              <input
-                name="licenseNumber"
-                placeholder="License Number"
-                value={formData.licenseNumber}
-                onChange={handleChange}
-                className="border p-3 rounded-lg"
-              />
-              <input
-                name="clinicLocation"
-                placeholder="Clinic Location"
-                value={formData.clinicLocation}
-                onChange={handleChange}
-                className="border p-3 rounded-lg"
-              />
-              <input
-                type="number"
-                name="fees"
-                placeholder="Fees"
-                value={formData.fees}
-                onChange={handleChange}
-                className="border p-3 rounded-lg"
-              />
-              <input
-                type="number"
-                name="experienceYears"
-                placeholder="Experience (Years)"
-                value={formData.experienceYears}
-                onChange={handleChange}
-                className="border p-3 rounded-lg"
-              />
-              <input
-                name="phoneNumber"
-                placeholder="Phone Number"
-                value={formData.phoneNumber}
-                onChange={handleChange}
-                className="border p-3 rounded-lg"
-              />
-            </>
-          ) : (
-            // View Mode
-            <>
-              <p>{formData.specialization || "Not provided"}</p>
-              <p>{formData.licenseNumber || "Not provided"}</p>
-              <p>{formData.clinicLocation || "Not provided"}</p>
-              <p>{formData.fees || "Not provided"}</p>
-              <p>{formData.experienceYears || "Not provided"}</p>
-              <p>{formData.phoneNumber || "Not provided"}</p>
-            </>
-          )}
-        </div>
-
-        {editMode ? (
-          <textarea
-            name="bio"
-            placeholder="Short Bio"
-            value={formData.bio}
+            {field}
+          </label>
+          <input
+            id={field}
+            name={field}
+            value={formData[field]}
             onChange={handleChange}
-            className="border p-3 rounded-lg w-full"
+            disabled={hasProfile && !editMode}
+            className={`border rounded-lg px-4 py-2 w-full ${
+              hasProfile && !editMode
+                ? "bg-gray-100 cursor-not-allowed"
+                : "bg-gray-50"
+            }`}
           />
-        ) : (
-          <p>{formData.bio || "Not provided"}</p>
-        )}
+        </div>
+      )
+    )}
 
-        {/* Education */}
-        <div>
-          <h3 className="font-semibold text-lg mb-2">Education</h3>
-          {editMode ? (
-            <>
+    {/* Bio field */}
+    <div className="flex flex-col gap-1 md:col-span-2">
+      <label htmlFor="bio" className="font-medium text-gray-700">
+        Bio
+      </label>
+      <textarea
+        id="bio"
+        name="bio"
+        value={formData.bio}
+        onChange={handleChange}
+        disabled={hasProfile && !editMode}
+        className={`border rounded-lg px-4 py-2 w-full ${
+          hasProfile && !editMode
+            ? "bg-gray-100 cursor-not-allowed"
+            : "bg-gray-50"
+        }`}
+        rows={4}
+      />
+    </div>
+
+    {/* Fees */}
+    <div className="flex flex-col gap-1">
+      <label htmlFor="fees" className="font-medium text-gray-700">
+        Fees
+      </label>
+      <input
+        type="number"
+        id="fees"
+        name="fees"
+        value={formData.fees}
+        onChange={handleChange}
+        disabled={hasProfile && !editMode}
+        className={`border rounded-lg px-4 py-2 w-full ${
+          hasProfile && !editMode
+            ? "bg-gray-100 cursor-not-allowed"
+            : "bg-gray-50"
+        }`}
+      />
+    </div>
+
+    {/* Experience */}
+    <div className="flex flex-col gap-1">
+      <label htmlFor="experienceYears" className="font-medium text-gray-700">
+        Experience (Years)
+      </label>
+      <input
+        type="number"
+        id="experienceYears"
+        name="experienceYears"
+        value={formData.experienceYears}
+        onChange={handleChange}
+        disabled={hasProfile && !editMode}
+        className={`border rounded-lg px-4 py-2 w-full ${
+          hasProfile && !editMode
+            ? "bg-gray-100 cursor-not-allowed"
+            : "bg-gray-50"
+        }`}
+      />
+    </div>
+  </div>
+</section>
+
+
+              {/* Education */}
+              <section>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700">
+                    <GraduationCap className="w-5 h-5 text-blue-600" />{" "}
+                    Education
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={addEducation}
+                    className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md"
+                  >
+                    <Plus className="w-4 h-4" /> Add
+                  </button>
+                </div>
+                {formData.education.map((edu, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"
+                  >
+                    <input
+                      placeholder="Degree"
+                      value={edu.degree}
+                      onChange={(e) =>
+                        handleEducationChange(index, "degree", e.target.value)
+                      }
+                      className="border rounded-lg px-4 py-2 bg-gray-50"
+                    />
+                    <input
+                      placeholder="College"
+                      value={edu.college}
+                      onChange={(e) =>
+                        handleEducationChange(index, "college", e.target.value)
+                      }
+                      className="border rounded-lg px-4 py-2 bg-gray-50"
+                    />
+                    <input
+                      placeholder="Passout Year"
+                      type="number"
+                      value={edu.passoutYear}
+                      onChange={(e) =>
+                        handleEducationChange(
+                          index,
+                          "passoutYear",
+                          e.target.value
+                        )
+                      }
+                      className="border rounded-lg px-4 py-2 bg-gray-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeEducation(index)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </section>
+
+              {/* Insurance */}
+              <section>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700">
+                    <ShieldCheck className="w-5 h-5 text-blue-600" /> Insurance
+                    Providers
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={addInsurance}
+                    className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-md"
+                  >
+                    <Plus className="w-4 h-4" /> Add
+                  </button>
+                </div>
+                {formData.insurance.map((provider, index) => (
+                  <div key={index} className="flex gap-3 items-center mb-2">
+                    <input
+                      placeholder="Insurance Provider"
+                      value={provider}
+                      onChange={(e) =>
+                        handleInsuranceChange(index, e.target.value)
+                      }
+                      className="border rounded-lg px-4 py-2 bg-gray-50 flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeInsurance(index)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </section>
+
+             
+
+             
+
+              {/* Buttons */}
+              <div className="flex gap-4 pt-6 border-t border-gray-200">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                >
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}{" "}
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditMode(false)}
+                  className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            // Display Profile
+            <DisplayProfile
+              doctorProfile={doctorProfile}
+              onEdit={() => setEditMode(true)}
+            />
+          )
+        ) : (
+          // No profile yet: create
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <section>
+              <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700 mb-3">
+                <User className="w-5 h-5 text-blue-600" /> Basic Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  "specialization",
+                  "licenseNumber",
+                  "clinicLocation",
+                  "phoneNumber",
+                ].map((field) => (
+                  <div key={field} className="flex flex-col gap-1">
+                    <label className="font-medium capitalize text-gray-700">
+                      {field}
+                    </label>
+                    <input
+                      name={field}
+                      value={formData[field]}
+                      onChange={handleChange}
+                      className="border rounded-lg px-4 py-2 bg-gray-50"
+                    />
+                  </div>
+                ))}
+            <div>
+
+  <label className="font-medium text-gray-700">Bio</label>
+  <textarea
+    name="bio"
+    value={formData.bio}
+    onChange={handleChange}
+    disabled={hasProfile && !editMode}
+    className={`border rounded-lg px-4 py-2 w-full ${
+      hasProfile && !editMode ? "bg-gray-100 cursor-not-allowed" : "bg-gray-50"
+    }`}
+    rows={4}
+  />
+</div> 
+
+                <div>
+                  <label className="font-medium text-gray-700">Fees</label>
+                  <input
+                    type="number"
+                    name="fees"
+                    value={formData.fees}
+                    onChange={handleChange}
+                    className="border rounded-lg px-4 py-2 bg-gray-50 w-full"
+                  />
+                </div>
+                <div>
+                  <label className="font-medium text-gray-700">
+                    Experience (Years)
+                  </label>
+                  <input
+                    type="number"
+                    name="experienceYears"
+                    value={formData.experienceYears}
+                    onChange={handleChange}
+                    className="border rounded-lg px-4 py-2 bg-gray-50 w-full"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Education */}
+            <section>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700">
+                  <GraduationCap className="w-5 h-5 text-blue-600" /> Education
+                </h3>
+                <button
+                  type="button"
+                  onClick={addEducation}
+                  className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md"
+                >
+                  <Plus className="w-4 h-4" /> Add
+                </button>
+              </div>
               {formData.education.map((edu, index) => (
-                <div key={index} className="grid grid-cols-3 gap-3 mb-2">
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"
+                >
                   <input
                     placeholder="Degree"
                     value={edu.degree}
                     onChange={(e) =>
                       handleEducationChange(index, "degree", e.target.value)
                     }
-                    className="border p-2 rounded-lg"
+                    className="border rounded-lg px-4 py-2 bg-gray-50"
                   />
                   <input
                     placeholder="College"
@@ -219,7 +547,7 @@ const DoctorProfileForm = ({ doctorId }) => {
                     onChange={(e) =>
                       handleEducationChange(index, "college", e.target.value)
                     }
-                    className="border p-2 rounded-lg"
+                    className="border rounded-lg px-4 py-2 bg-gray-50"
                   />
                   <input
                     placeholder="Passout Year"
@@ -232,151 +560,81 @@ const DoctorProfileForm = ({ doctorId }) => {
                         e.target.value
                       )
                     }
-                    className="border p-2 rounded-lg"
+                    className="border rounded-lg px-4 py-2 bg-gray-50"
                   />
-                  {formData.education.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeEducation(index)}
-                      className="text-red-600 text-sm underline col-span-3"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addEducation}
-                className="bg-blue-500 text-white px-3 py-1 rounded-lg mt-2"
-              >
-                + Add Education
-              </button>
-            </>
-          ) : (
-            <>
-              {formData.education.map((edu, index) => (
-                <div key={index} className="grid grid-cols-3 gap-3 mb-2">
-                  <p>{edu.degree || "Not provided"}</p>
-                  <p>{edu.college || "Not provided"}</p>
-                  <p>{edu.passoutYear || "Not provided"}</p>
-                </div>
-              ))}
-            </>
-          )}
-        </div>
-
-        {/* Schedule */}
-        <div>
-          <h3 className="font-semibold text-lg mb-2">Schedule</h3>
-          {editMode ? (
-            <>
-              {formData.schedule.map((slot, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-4 gap-3 mb-2 items-center"
-                >
-                  <select
-                    value={slot.dayOfWeek}
-                    onChange={(e) =>
-                      handleScheduleChange(
-                        index,
-                        "dayOfWeek",
-                        parseInt(e.target.value)
-                      )
-                    }
-                    className="border p-2 rounded-lg"
+                  <button
+                    type="button"
+                    onClick={() => removeEducation(index)}
+                    className="text-red-600 hover:text-red-800 text-sm"
                   >
-                    {days.map((day, i) => (
-                      <option key={i} value={i}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="time"
-                    value={slot.start}
-                    onChange={(e) =>
-                      handleScheduleChange(index, "start", e.target.value)
-                    }
-                    className="border p-2 rounded-lg"
-                  />
-                  <input
-                    type="time"
-                    value={slot.end}
-                    onChange={(e) =>
-                      handleScheduleChange(index, "end", e.target.value)
-                    }
-                    className="border p-2 rounded-lg"
-                  />
-                  <input
-                    type="number"
-                    value={slot.slotMinutes}
-                    onChange={(e) =>
-                      handleScheduleChange(index, "slotMinutes", e.target.value)
-                    }
-                    className="border p-2 rounded-lg"
-                  />
-                  {formData.schedule.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeSchedule(index)}
-                      className="text-red-600 text-sm underline col-span-4"
-                    >
-                      Remove
-                    </button>
-                  )}
+                    Remove
+                  </button>
                 </div>
               ))}
-              <button
-                type="button"
-                onClick={addSchedule}
-                className="bg-green-500 text-white px-3 py-1 rounded-lg mt-2"
-              >
-                + Add Schedule
-              </button>
-            </>
-          ) : (
-            <>
-              {formData.schedule.map((slot, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-4 gap-3 mb-2 items-center"
+            </section>
+
+            {/* Insurance */}
+            <section>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700">
+                  <ShieldCheck className="w-5 h-5 text-blue-600" /> Insurance
+                  Providers
+                </h3>
+                <button
+                  type="button"
+                  onClick={addInsurance}
+                  className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-md"
                 >
-                  <p>{days[slot.dayOfWeek]}</p>
-                  <p>{slot.start}</p>
-                  <p>{slot.end}</p>
-                  <p>{slot.slotMinutes}</p>
+                  <Plus className="w-4 h-4" /> Add
+                </button>
+              </div>
+              {formData.insurance.map((provider, index) => (
+                <div key={index} className="flex gap-3 items-center mb-2">
+                  <input
+                    placeholder="Insurance Provider"
+                    value={provider}
+                    onChange={(e) =>
+                      handleInsuranceChange(index, e.target.value)
+                    }
+                    className="border rounded-lg px-4 py-2 bg-gray-50 flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeInsurance(index)}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Remove
+                  </button>
                 </div>
               ))}
-            </>
-          )}
-        </div>
+            </section>
 
-        {/* Submit */}
-        {isEditMode && (
-          <div className="flex flex-col items-center justify-center sm:flex-row gap-4 pt-6">
-            <button
-              type="submit"
-              className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <Save className="w-5 h-5" />
-              {hasProfile ? "Update Profile" : "Create Profile"}
-            </button>
-
-            {hasProfile && (
+           
+            {/* Buttons */}
+            <div className="flex gap-4 pt-6 border-t border-gray-200">
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}{" "}
+                Save
+              </button>
               <button
                 type="button"
-                onClick={() => setIsEditMode(false)}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                onClick={() => setEditMode(false)}
+                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 flex items-center gap-2"
               >
-                <X className="w-5 h-5" />
-                Cancel
+                <X className="w-4 h-4" /> Cancel
               </button>
-            )}
-          </div>
+            </div>
+          </form>
         )}
-      </form>
+      </div>
     </div>
   );
 };

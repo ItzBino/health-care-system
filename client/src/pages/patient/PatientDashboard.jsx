@@ -24,11 +24,11 @@ import {
 } from 'lucide-react';
 
 const PatientDashboard = () => {
-  const { user, loading: authLoading } = useContext(AuthContext);
+  const { user, loading: authLoading , userRole} = useContext(AuthContext);
   const { patient, loading: patientLoading } = useContext(UserContext);
   const location = useLocation();
 
-  const navigationTabs = [
+  const navigationTabs = userRole === "PATIENT" ? [
     {
       name: 'Overview',
       path: '/profile/overview',
@@ -57,7 +57,8 @@ const PatientDashboard = () => {
       description: 'Medication history',
       color: 'orange'
     }
-  ];
+  ]:[];
+
 
   if (authLoading || patientLoading) {
     return (

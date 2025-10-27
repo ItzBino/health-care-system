@@ -11,6 +11,7 @@ const UserProvider = ({ children }) => {
   const [report, setReport] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
+  
 
   const fetchDoctors = async () => {
     try {
@@ -18,6 +19,7 @@ const UserProvider = ({ children }) => {
       // console.log(response.data.data);
       if (response.data.success) {
         setDoctor(response.data.data);
+        console.log(response.data.data);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -42,7 +44,7 @@ const UserProvider = ({ children }) => {
       if (response.data.success) {
         setPatient(response.data.data);
         setHasProfile(true);
-        setEditMode(false);
+        setIsEditMode(false);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -65,7 +67,7 @@ const UserProvider = ({ children }) => {
     } catch (error) {
       console.error("Error fetching doctors:", error);
       setHasProfile(false);
-      setEditMode(true);
+      setIsEditMode(true);
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,7 @@ const UserProvider = ({ children }) => {
       // console.log(response.data.data);
       if (response.data.success) {
         setPrescription(response.data.data);
-        console.log(response.data.data);
+        console.log("prescription: ", response.data.data);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -97,9 +99,9 @@ const UserProvider = ({ children }) => {
   const fetchPatientReport = async () => {
     try {
       const response = await api.get("/api/patient/health-report");
-      console.log(response.data.data);
       if (response.data.success) {
         setReport(response.data.data);
+        console.log("report: ", response.data.data)
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -125,6 +127,9 @@ const UserProvider = ({ children }) => {
     setPrescription,
     report,
     setReport,
+    hasProfile,
+    setHasProfile,
+    loading,
   };
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

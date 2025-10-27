@@ -10,7 +10,7 @@ import Doctors from "./pages/Doctors";
 import DoctorDetails from "./pages/common/DoctorDetails";
 import PatientProfile from "./pages/patient/PatientProfile";
 import PatientDashboard from "./pages/patient/PatientDashboard";
-import MyAppointments from "./pages/patient/AppointmentBooking";
+import BookedAppointments from "./pages/patient/BookedAppointments";
 import Reports from "./pages/patient/Reports";
 import Prescriptions from "./pages/patient/Prescriptions";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
@@ -19,11 +19,15 @@ import Settings from "./pages/common/Settings";
 import BookingPage from "./pages/common/BookingPage";
 import PrescriptionForm from "./pages/doctor/PrescriptionForm";
 import MedicalReportForm from "./pages/doctor/MedicalReportForm";
+import DoctorProfile from "./pages/doctor/DoctorProfile";
+import SuccessPage from "./pages/SuccessPage";
+import MyAppointments from "./pages/doctor/MyAppointments"
 
 const App = () => {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const { userRole } = useContext(AuthContext);
+  const { loading ,userRole} = useContext(AuthContext);
+  console.log(userRole)
 
   const switchToLogin = () => {
     setShowRegister(false);
@@ -34,36 +38,37 @@ const App = () => {
     setShowLogin(false);
     setTimeout(() => setShowRegister(true), 200); // Small delay for smooth transition
   };
+  if(loading){
+    return <div>Loading...</div>
+  }
 
   return (
     <>
       <Navbar setShowRegister={setShowRegister} setShowLogin={setShowLogin} />
-      <NavLink to="/prescription">prescription</NavLink>
-      <NavLink to="/report">report</NavLink>
-
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
 
         <Route path="/settings" element={<Settings />} />
-        <Route path="/prescription-form" element={<PrescriptionForm />} />
-        <Route path="/report" element={<MedicalReportForm />} />
+        <Route path="/prescription-form/:patientId" element={<PrescriptionForm />} />
+        <Route path="/report-form/:patientId" element={<MedicalReportForm />} />
 
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/doctors/:docId" element={<DoctorDetails />} />
         <Route path="/booking/:docId" element={<BookingPage />} />
+        <Route path="/checkout-success" element={<SuccessPage/>} />
 
         <Route
           path="/profile"
           element={
-            userRole === "DOCTOR" ? <DoctorDashboard /> : <PatientDashboard />
+            userRole === "PATIENT" ? <PatientDashboard/>:<DoctorDashboard />   
           }
         >
           {/* Patient routes */}
           {userRole === "PATIENT" && (
             <>
               <Route path="overview" element={<PatientProfile />} />
-              <Route path="my-appointments" element={<MyAppointments />} />
+              <Route path="my-appointments" element={<BookedAppointments />} />
               <Route path="reports" element={<Reports />} />
               <Route path="prescriptions" element={<Prescriptions />} />
               <Route index element={<Navigate to="overview" />} />

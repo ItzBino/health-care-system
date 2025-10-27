@@ -7,31 +7,33 @@ import Appointment from "../models/Appointment.js";
 import DoctorProfile from "../models/DoctorProfile.js";
 import Prescription from "../models/Prescription.js";
 import MedicalReport from "../models/MedicalReport.js";
+import mongoose from "mongoose";
 
 
 //patient register service
 export const register = async (body, imageFile) => {
   const { name, email, password } = body;
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw new Error("Email already in use");
-  }
-  if (!name || !email || !password) {
-    throw new Error("All fields are required");
-  }
 
-  if (!validator.isEmail(email)) {
-    throw new Error("Invalid email");
-  }
-  if (password < 6) {
-    throw new Error("Password must be at least 6 characters");
-  }
+  const existingUser = await User.findOne({ email });
+  if (existingUser) throw new Error("Email already in use");
+  if (!name || !email || !password) throw new Error("All fields are required");
+
+  if (!validator.isEmail(email)) throw new Error("Invalid email");
+  if (password.length < 6) throw new Error("Password must be at least 6 characters");
+
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
-    resource_type: "image",
-  });
-  const imageUrl = imageUpload.secure_url;
+
+  // Default image
+  let imageUrl = 'https://res.cloudinary.com/dyrukgnno/image/upload/v1758117051/jcfmctqa3y6i0y8rfels.jpg';
+
+  // Only upload if imageFile exists
+  if (imageFile && imageFile.path) {
+    const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
+      resource_type: "image",
+    });
+    imageUrl = imageUpload.secure_url;
+  }
 
   const patientData = {
     ...body,
@@ -41,11 +43,9 @@ export const register = async (body, imageFile) => {
     image: imageUrl,
     role: "PATIENT",
   };
-  // console.log("Before saving patient");
+
   const patient = new User(patientData);
-  // console.log("User instance created:", patient);
   await patient.save();
-  // console.log(patient);
   return patient;
 };
 
@@ -124,60 +124,6 @@ export const updatePatientProfile = async (patientId, body) => {
 };
 
 
-//Appointment booking
-
-export const appointmentBooking = async (body, patientId, docId) => {
-  // 1️⃣ Check if doctor exists
-  const doctor = await DoctorProfile.findOne({ user: docId });
-  if (!doctor) throw new Error("Doctor not found");
-
-  // 2️⃣ Check if selected date is blocked (doctor day-off or holiday)
-  const bookingDate = new Date(body.start).toISOString().split("T")[0];
-  const isBlocked = doctor.blockedDates.some(date =>
-    new Date(date).toISOString().split("T")[0] === bookingDate
-  );
-  if (isBlocked) throw new Error("Doctor is not available on this date");
-
-  // 3️⃣ Prevent same slot double booking
-  const existing = await Appointment.findOne({
-    doctor: docId,
-    start: body.start
-  });
-  if (existing) throw new Error("This slot is already booked");
-
-  // 4️⃣ Prepare appointment data
-  const data = {
-    ...body,
-    patient: patientId,
-    doctor: docId,
-    createdBy: patientId,
-  };
-
-  // 5️⃣ Auto-calculate `end` time (based on doctor’s slot duration or default 30 mins)
-  const slotMinutes =
-    doctor.schedule.find(
-      (s) => s.dayOfWeek === new Date(body.start).getDay()
-    )?.slotMinutes || 30;
-
-  if (!data.end) {
-    data.end = new Date(new Date(body.start).getTime() + slotMinutes * 60000);
-  }
-
-  // 6️⃣ Save appointment
-  let appointmentData = new Appointment(data);
-  await appointmentData.save();
-
-  // 7️⃣ Add this specific time to doctor’s blockedDates to prevent re-booking
-  doctor.blockedDates.push(new Date(body.start));
-  await doctor.save();
-
-  // 8️⃣ Populate patient & doctor details before returning
-  appointmentData = await Appointment.findById(appointmentData._id)
-    .populate("patient", "name email image")
-    .populate("doctor", "name email image");
-
-  return appointmentData;
-};
 
 
 //AppointmentCancelling
@@ -201,30 +147,32 @@ export const appointmentBooking = async (body, patientId, docId) => {
 
 //get patient appointments
 export const getPatientAppointments = async (patientId) => {
- const now = new Date();
-const appointments = await Appointment.find({
-  patient: patientId, 
-  status: { $in: ["REQUESTED", "CONFIRMED", "RESCHEDULED"] }
-})
-  .sort({ start: 1 })
-  .populate("patient", "name email image")
-  .populate("doctor", "name email image");
+  const now = new Date();
+
+  const appointments = await Appointment.find({
+    patient: patientId,
+    isCompleted: false,
+  })
+    .populate("patient", "name email image")
+    .populate("doctor","name email image");
+
   return appointments;
 };
 
 export const fetchDoctors = async () => {
-  const doctors = await DoctorProfile.find().populate({
-    path: "user",
-    select: "name email image emailVerified status",
-    match: {
-      emailVerified: true,
-      status: "APPROVED", // ✅ only approved users
-    },
-  });
+  const doctors = await DoctorProfile.find()
+    .populate({
+      path: "user",
+      select: "name email image emailVerified status",
+    })
+    .lean();
 
-  // Filter out any doctor whose user didn’t match
-  return doctors.filter((doc) => doc.user !== null);
+  // Filter out doctors whose user is not approved or email not verified
+  return doctors.filter(
+    (doc) => doc.user && doc.user.emailVerified === true && doc.user.status === "APPROVED"
+  );
 };
+
 
 export const getPrescriptions = async (patientId) => {
   const prescriptionData = await Prescription.find({
@@ -236,6 +184,41 @@ export const getPrescriptions = async (patientId) => {
 
   return prescriptionData;
 };
+
+
+
+
+export const getDoctorProfileWithBookedTimes = async (doctorId) => {
+  if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+    throw new Error("Invalid doctor ID");
+  }
+
+  // 1️⃣ Try to find by User ID first
+  let doctorProfile = await DoctorProfile.findOne({ user: doctorId })
+    .populate("user", "name email image emailVerified status")
+    .lean();
+
+  // 2️⃣ If not found, try to find by DoctorProfile _id
+  if (!doctorProfile) {
+    doctorProfile = await DoctorProfile.findById(doctorId)
+      .populate("user", "name email image emailVerified status")
+      .lean();
+  }
+
+  if (!doctorProfile) throw new Error("Doctor not found");
+
+  // 3️⃣ Fetch future appointments
+  const futureAppointments = await Appointment.find({
+    doctor: doctorProfile._id,
+    start: { $gte: Date.now() },
+    status: { $in: ["Requested", "Confirmed", "REQUESTED", "CONFIRMED"] },
+  }).lean();
+
+  const bookedTimes = futureAppointments.map(a => Number(a.start));
+
+  return { doctorProfile, bookedTimes };
+};
+
 
 
 export const getMedicalRecords = async (patientId) => {

@@ -300,7 +300,7 @@ const Doctors = () => {
                           {/* Quick availability info */}
                           <div className="mt-2">
                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Available Today
+                              {item.available ? 'Available Today' : 'Unavailable'}
                             </span>
                           </div>
                         </div>
@@ -318,28 +318,17 @@ const Doctors = () => {
                           <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <MapPin className="w-4 h-4 text-green-600" />
                           </div>
-                          <span className="text-sm font-medium">{item.location || 'New York, NY'}</span>
+                          <span className="text-sm font-medium">{item.clinicLocation || 'New York, NY'}</span>
                         </div>
                         <div className="flex items-center gap-3 text-gray-600">
                           <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <DollarSign className="w-4 h-4 text-purple-600" />
                           </div>
-                          <span className="text-sm font-medium">Consultation: ${item.consultationFee || '150'}</span>
+                          <span className="text-sm font-medium">Consultation: ${item.fees || '150'}</span>
                         </div>
                       </div>
 
-                      {/* Languages */}
-                      {item.languages && (
-                        <div className="mb-5">
-                          <div className="flex flex-wrap gap-2">
-                            {item.languages.map((lang, idx) => (
-                              <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-medium">
-                                {lang}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                  
 
                       {/* Action Buttons */}
                       <div className="space-y-3">

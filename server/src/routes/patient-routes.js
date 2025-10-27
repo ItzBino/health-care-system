@@ -1,5 +1,6 @@
 import express from "express";
 import * as patientController from "../controllers/patient-controller.js";
+import bookingRoutes from "./booking-routes.js"
 import { patientAuth } from "../middleware/patient-auth.js";
 import { patientRole } from "../middleware/patient-auth.js";
 import upload  from '../middleware/multer.js'
@@ -14,12 +15,14 @@ router.get('/',patientAuth,patientRole, patientController.patientById);
 router.get('/doctor-profiles',patientAuth,patientRole, patientController.getAllDoctors);
 router.post('/create-profile',patientAuth,patientRole, patientController.createProfile);
 router.get('/get-profile',patientAuth,patientRole, patientController.getProfile);
+router.get('/:doctorId/booked',patientAuth,patientRole, patientController.getDoctorWithBookedTimes);
 router.patch('/update-profile',patientAuth,patientRole, patientController.updateProfile);
-router.post('/book-appointment/:docId',patientAuth,patientRole,patientController.appointments);
-router.post('/my-appointment',patientAuth,patientRole,patientController.getAppointments);
+router.get('/my-appointment',patientAuth,patientRole,patientController.getAppointments);
 router.get('/prescription',patientAuth,patientRole,patientController.fetchPrescription);
 router.get('/health-report',patientAuth,patientRole,patientController.fetchMedicalReport);
 router.post('/logout', patientAuth,patientController.logout);
+
+router.use("/booking",bookingRoutes)
 
 
 export default router;

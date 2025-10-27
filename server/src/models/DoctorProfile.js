@@ -26,13 +26,7 @@
 
 import mongoose from 'mongoose';
 
-// ✅ Sub-schema for schedule
-const slotSchema = new mongoose.Schema({
-  dayOfWeek: { type: Number, min: 0, max: 6, required: true },
-  start: String, // "09:00"
-  end: String,   // "12:00"
-  slotMinutes: { type: Number, default: 30 },
-}, { _id: false });
+
 
 // ✅ Sub-schema for education details
 const educationSchema = new mongoose.Schema({
@@ -58,18 +52,30 @@ const doctorProfileSchema = new mongoose.Schema({
     default: 'PENDING' 
   },
 
-  schedule: [slotSchema],
-  blockedDates: [Date],
-
+  available: { type: Boolean, default: true },
+  slots_booked: { type: Object, default: {} },
+ 
+  
   // ✅ New fields
   phoneNumber: { type: String, default: 'Not provided' },
 
   education: { type: [educationSchema], default: [] }, // array of detailed objects
   insurance: { type: [String], default: [] },          // multiple providers
 
-}, { timestamps: true });
+}, { timestamps: true ,minimize: false });
 
 // Index for search optimization
 doctorProfileSchema.index({ specialization: 'text', clinicLocation: 'text' });
 
 export default mongoose.model('DoctorProfile', doctorProfileSchema);
+
+
+// blockedDates: [Date],
+//  schedule: [slotSchema],
+// ✅ Sub-schema for schedule
+// const slotSchema = new mongoose.Schema({
+//   dayOfWeek: { type: Number, min: 0, max: 6, required: true },
+//   start: String, // "09:00"
+//   end: String,   // "12:00"
+//   slotMinutes: { type: Number, default: 30 },
+// }, { _id: false });

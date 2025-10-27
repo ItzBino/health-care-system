@@ -5,11 +5,17 @@ import { api } from "../api/auth";
 export const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
-  const [userRole, setUserRole] = useState("PATIENT");
+  const [userRole, setUserRole] = useState(localStorage.getItem('role')?localStorage.getItem('role'):"PATIENT");
     const [token, setToken] = useState(localStorage.getItem("token")?localStorage.getItem("token"):false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+
+ useEffect(() => {
+  if(userRole) {
+    localStorage.setItem("role", userRole);
+  }
+}, [userRole]);
 
   //get user profile
   const refreshUser = async () => {
@@ -23,6 +29,7 @@ const AuthProvider = ({ children }) => {
       }
       if (response.data.success) {
         setUser(response.data.data);
+        setUserRole(role);
         console.log(response.data.data);
         return response.data.success
       }
@@ -34,7 +41,6 @@ const AuthProvider = ({ children }) => {
     finally{
       setLoading(false);
     }
-    
   };
 
   //login function
@@ -70,7 +76,7 @@ const AuthProvider = ({ children }) => {
         response = await api.post("/api/doctor/register", credentials);
       }
       if (response.data.success) {
-        navigate("/login");
+        return true;
       }
     } catch (error) {
       throw error; // error will be caught in component

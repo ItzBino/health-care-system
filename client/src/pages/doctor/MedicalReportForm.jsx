@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useContext, useState, useEffect } from "react";
+import { api } from "../../api/auth"
+import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import {
   FileText,
@@ -41,9 +42,9 @@ import {
   Eye,
   Bone
 } from 'lucide-react';
+import { DoctorContext } from "../../context/DoctorContext";
 
-const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
-  const [visitDate, setVisitDate] = useState(format(new Date(), "yyyy-MM-dd"));
+const MedicalReportForm = () => {
   const [diagnoses, setDiagnoses] = useState([{ primary: true, code: "", description: "" }]);
   const [vitals, setVitals] = useState({ 
     height: "", 
@@ -51,42 +52,38 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
     bp: "", 
     pulse: "", 
     temp: "",
-    oxygen: "",
-    glucose: "",
-    respRate: ""
   });
+  const { patientId: paramId } = useParams()
   const [symptoms, setSymptoms] = useState([""]);
-  const [labTests, setLabTests] = useState([{ name: "", result: "", status: "normal" }]);
   const [treatmentPlan, setTreatmentPlan] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
-  const [status, setStatus] = useState("PENDING");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [expandedSections, setExpandedSections] = useState(['vitals', 'diagnosis', 'treatment']);
   const [reportNotes, setReportNotes] = useState("");
+  const {doctorProfile,patientDetails,patientId,setPatientId} = useContext(DoctorContext)
+  console.log("patient Details in report: ", patientDetails)
 
-  // Sample patient and doctor data (replace with actual data)
-  const patientData = {
-    name: "John Doe",
-    age: 45,
-    gender: "Male",
-    bloodGroup: "O+",
-    id: "PAT-001234",
-    phone: "+1234567890",
-    email: "john.doe@email.com",
-    lastVisit: "2024-01-10",
-    conditions: ["Hypertension", "Diabetes Type 2"],
-    allergies: ["Penicillin", "Peanuts"]
-  };
+  
+    useEffect(() => {
+      if (paramId) setPatientId(paramId);
+    }, [paramId]);
+  
 
-  const doctorData = {
-    name: "Dr. Sarah Johnson",
-    specialization: "Internal Medicine",
-    license: "MD-123456",
-    hospital: "City Medical Center",
-    department: "General Medicine"
-  };
+  const calculateAge = (dob) => {
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+
+  return age;
+};
 
   // Common symptoms for quick selection
   const commonSymptoms = [
@@ -112,25 +109,6 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
     }
   };
 
-  // Calculate BMI
-  const calculateBMI = () => {
-    if (vitals.height && vitals.weight) {
-      const heightInM = parseFloat(vitals.height) / 100;
-      const bmi = (parseFloat(vitals.weight) / (heightInM * heightInM)).toFixed(1);
-      return bmi;
-    }
-    return null;
-  };
-
-  // Get BMI Category
-  const getBMICategory = (bmi) => {
-    if (!bmi) return "";
-    const value = parseFloat(bmi);
-    if (value < 18.5) return { text: "Underweight", color: "text-yellow-600" };
-    if (value < 25) return { text: "Normal", color: "text-green-600" };
-    if (value < 30) return { text: "Overweight", color: "text-orange-600" };
-    return { text: "Obese", color: "text-red-600" };
-  };
 
   // Handle vitals change
   const handleVitalsChange = (field, value) => {
@@ -187,42 +165,24 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
     }
   };
 
-  // Handle lab tests
-  const handleLabTestChange = (index, field, value) => {
-    const updated = [...labTests];
-    updated[index][field] = value;
-    setLabTests(updated);
-  };
-
-  const addLabTest = () => {
-    setLabTests([...labTests, { name: "", result: "", status: "normal" }]);
-  };
-
-  const removeLabTest = (index) => {
-    if (labTests.length > 1) {
-      setLabTests(labTests.filter((_, i) => i !== index));
-    }
-  };
-
-  // Get vital status indicators
-  const getVitalStatus = (type, value) => {
-    if (!value) return null;
+  // // Get vital status indicators
+  // const getVitalStatus = (type, value) => {
+  //   if (!value) return null;
     
-    const ranges = {
-      bp: { 
-        normal: { systolic: [90, 120], diastolic: [60, 80] },
-        elevated: { systolic: [120, 130], diastolic: [80, 90] },
-        high: { systolic: [130, 180], diastolic: [90, 120] }
-      },
-      pulse: { normal: [60, 100], low: [0, 60], high: [100, 200] },
-      temp: { normal: [36, 37.5], low: [0, 36], high: [37.5, 42] },
-      oxygen: { normal: [95, 100], low: [0, 95] }
-    };
+  //   const ranges = {
+  //     bp: { 
+  //       normal: { systolic: [90, 120], diastolic: [60, 80] },
+  //       elevated: { systolic: [120, 130], diastolic: [80, 90] },
+  //       high: { systolic: [130, 180], diastolic: [90, 120] }
+  //     },
+  //     pulse: { normal: [60, 100], low: [0, 60], high: [100, 200] },
+  //     temp: { normal: [36, 37.5], low: [0, 36], high: [37.5, 42] },
+  //   };
 
-    // Implement actual logic based on ranges
-    // This is simplified for demonstration
-    return { status: "normal", color: "text-green-600" };
-  };
+  //   // Implement actual logic based on ranges
+  //   // This is simplified for demonstration
+  //   return { status: "normal", color: "text-green-600" };
+  // };
 
   // Submit form
   const handleSubmit = async (e) => {
@@ -242,35 +202,27 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
 
     try {
       const payload = {
-        patient: patientId,
-        doctor: doctorId,
-        visitDate,
         diagnoses: validDiagnoses,
         vitals,
         symptoms: symptoms.filter(s => s !== ""),
-        labTests: labTests.filter(l => l.name !== ""),
         treatmentPlan,
         followUpDate: followUpDate || null,
-        status,
         reportNotes,
-        bmi: calculateBMI()
       };
 
-      const res = await axios.post("/api/medical-reports", payload);
+      const res = await api.post(`/api/doctor/report/${patientId}`, payload);
 
       if (res.data.success) {
         setMessage("Medical report created successfully!");
         setMessageType("success");
         // Reset form
         setDiagnoses([{ primary: true, code: "", description: "" }]);
-        setVitals({ height: "", weight: "", bp: "", pulse: "", temp: "", oxygen: "", glucose: "", respRate: "" });
-        setSymptoms([""]);
-        setLabTests([{ name: "", result: "", status: "normal" }]);
+        setVitals({ height: "", weight: "", bp: "", pulse: "", temp: "" });
         setTreatmentPlan("");
         setFollowUpDate("");
-        setStatus("PENDING");
-        setReportNotes("");
-        if (onSuccess) onSuccess();
+        setReportNotes("")
+        setSymptoms([""]);
+      alert(res.data.message)
       }
     } catch (err) {
       console.error(err);
@@ -281,8 +233,6 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
     }
   };
 
-  const bmi = calculateBMI();
-  const bmiCategory = getBMICategory(bmi);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
@@ -300,11 +250,6 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
                   <p className="text-blue-100 mt-1">Create comprehensive patient medical report</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm">
-                  Visit Date: {format(new Date(visitDate), "MMM dd, yyyy")}
-                </span>
-              </div>
             </div>
           </div>
         </div>
@@ -313,41 +258,6 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
           {/* Main Form Section */}
           <div className="lg:col-span-2 space-y-6">
             <form onSubmit={handleSubmit}>
-              {/* Visit Information */}
-              <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                  Visit Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Visit Date
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={visitDate}
-                      onChange={(e) => setVisitDate(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Report Status
-                    </label>
-                    <select
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="PENDING">Pending</option>
-                      <option value="COMPLETED">Completed</option>
-                      <option value="REVIEWED">Reviewed</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
 
               {/* Symptoms Section */}
               <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
@@ -474,16 +384,6 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
                         />
                       </div>
 
-                      {/* BMI Display */}
-                      {bmi && (
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <p className="text-sm text-gray-600">BMI</p>
-                          <p className="text-xl font-bold">{bmi}</p>
-                          <p className={`text-sm font-medium ${bmiCategory.color}`}>
-                            {bmiCategory.text}
-                          </p>
-                        </div>
-                      )}
 
                       {/* Blood Pressure */}
                       <div>
@@ -528,51 +428,6 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                           value={vitals.temp}
                           onChange={(e) => handleVitalsChange("temp", e.target.value)}
-                        />
-                      </div>
-
-                      {/* Oxygen Saturation */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          <Droplets className="inline w-4 h-4 mr-1" />
-                          O₂ Saturation (%)
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="98"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          value={vitals.oxygen}
-                          onChange={(e) => handleVitalsChange("oxygen", e.target.value)}
-                        />
-                      </div>
-
-                      {/* Blood Glucose */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          <TrendingUp className="inline w-4 h-4 mr-1" />
-                          Glucose (mg/dL)
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="90"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          value={vitals.glucose}
-                          onChange={(e) => handleVitalsChange("glucose", e.target.value)}
-                        />
-                      </div>
-
-                      {/* Respiratory Rate */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          <Activity className="inline w-4 h-4 mr-1" />
-                          Resp. Rate
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="16"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          value={vitals.respRate}
-                          onChange={(e) => handleVitalsChange("respRate", e.target.value)}
                         />
                       </div>
                     </div>
@@ -674,77 +529,7 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
                   </div>
                 )}
               </div>
-
-              {/* Lab Tests Section */}
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
-                <div 
-                  className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 cursor-pointer"
-                  onClick={() => toggleSection('labtests')}
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                      <ClipboardList className="w-5 h-5 text-green-600" />
-                      Lab Tests
-                    </h3>
-                    <ChevronDown className={`w-5 h-5 transition-transform ${
-                      expandedSections.includes('labtests') ? 'rotate-180' : ''
-                    }`} />
-                  </div>
-                </div>
-                
-                {expandedSections.includes('labtests') && (
-                  <div className="p-6">
-                    <div className="space-y-3">
-                      {labTests.map((test, index) => (
-                        <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                          <input
-                            type="text"
-                            placeholder="Test name"
-                            className="md:col-span-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            value={test.name}
-                            onChange={(e) => handleLabTestChange(index, "name", e.target.value)}
-                          />
-                          <input
-                            type="text"
-                            placeholder="Result"
-                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            value={test.result}
-                            onChange={(e) => handleLabTestChange(index, "result", e.target.value)}
-                          />
-                          <div className="flex gap-2">
-                            <select
-                              value={test.status}
-                              onChange={(e) => handleLabTestChange(index, "status", e.target.value)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="normal">Normal</option>
-                              <option value="abnormal">Abnormal</option>
-                              <option value="critical">Critical</option>
-                            </select>
-                            {labTests.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => removeLabTest(index)}
-                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={addLabTest}
-                      className="mt-3 text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Add Lab Test
-                    </button>
-                  </div>
-                )}
-              </div>
+          
 
               {/* Treatment Plan Section */}
               <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
@@ -872,39 +657,37 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold text-gray-800">{patientData.name}</p>
+                  <p className="font-semibold text-gray-800">{patientDetails?.user.name}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-sm text-gray-500">Age</p>
-                    <p className="font-semibold text-gray-800">{patientData.age} years</p>
+                    <p className="font-semibold text-gray-800">{patientDetails?.dob 
+                    ? calculateAge(patientDetails.dob):"N/A"} years</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Gender</p>
-                    <p className="font-semibold text-gray-800">{patientData.gender}</p>
+                    <p className="font-semibold text-gray-800">{patientDetails?.gender}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-sm text-gray-500">Patient ID</p>
-                    <p className="font-mono text-sm text-gray-800">{patientData.id}</p>
-                  </div>
+                 
                   <div>
                     <p className="text-sm text-gray-500">Blood Group</p>
-                    <p className="font-semibold text-gray-800">{patientData.bloodGroup}</p>
+                    <p className="font-semibold text-gray-800">{patientDetails?.bloodGroup}</p>
                   </div>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-sm text-gray-500">Last Visit</p>
                   <p className="font-semibold text-gray-800">{patientData.lastVisit}</p>
-                </div>
+                </div> */}
                 
                 {/* Medical Conditions */}
-                {patientData.conditions.length > 0 && (
+                {patientDetails?.chronicConditions.length > 0 && (
                   <div className="pt-3 border-t">
                     <p className="text-sm text-gray-500 mb-2">Medical Conditions</p>
                     <div className="flex flex-wrap gap-2">
-                      {patientData.conditions.map((condition, idx) => (
+                      {patientDetails?.chronicConditions.map((condition, idx) => (
                         <span key={idx} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                           {condition}
                         </span>
@@ -914,14 +697,14 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
                 )}
 
                 {/* Allergies Alert */}
-                {patientData.allergies.length > 0 && (
+                {patientDetails?.allergies.length > 0 && (
                   <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-red-800">Allergies</p>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {patientData.allergies.map((allergy, idx) => (
+                          {patientDetails?.allergies.map((allergy, idx) => (
                             <span key={idx} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
                               {allergy}
                             </span>
@@ -943,23 +726,23 @@ const MedicalReportForm = ({ patientId, doctorId, onSuccess }) => {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-semibold text-gray-800">{doctorData.name}</p>
+                  <p className="font-semibold text-gray-800">{doctorProfile?.user.name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Specialization</p>
-                  <p className="font-semibold text-gray-800">{doctorData.specialization}</p>
+                  <p className="font-semibold text-gray-800">{doctorProfile?.specialization}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">License</p>
-                  <p className="font-mono text-sm text-gray-800">{doctorData.license}</p>
+                  <p className="font-mono text-sm text-gray-800">{doctorProfile?.licenseNumber}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Department</p>
-                  <p className="font-semibold text-gray-800">{doctorData.department}</p>
+                  <p className="font-semibold text-gray-800">{doctorProfile?.department}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Hospital</p>
-                  <p className="font-semibold text-gray-800">{doctorData.hospital}</p>
+                  <p className="text-sm text-gray-500">Location</p>
+                  <p className="font-semibold text-gray-800">{doctorProfile?.clinicLocation}</p>
                 </div>
               </div>
             </div>
