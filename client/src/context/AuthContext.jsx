@@ -30,7 +30,7 @@ const AuthProvider = ({ children }) => {
       if (response.data.success) {
         setUser(response.data.data);
         setUserRole(role);
-        console.log(response.data.data);
+        console.log("User:", response.data.data);
         return response.data.success
       }
     } catch (error) {

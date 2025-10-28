@@ -12,7 +12,7 @@ const Footer = () => {
           <div className="text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
               <FaHeart className="text-red-400 text-xl" />
-              <span className="text-xl font-bold">HealthCare Plus</span>
+              <span className="text-xl font-bold">NovaMed</span>
             </div>
             <p className="text-blue-200 text-sm">Your Health, Our Priority</p>
           </div>
@@ -43,7 +43,7 @@ const Footer = () => {
         <hr className="my-6 border-blue-800" />
 
         <div className="text-center text-sm text-blue-200">
-          © {currentYear} HealthCare Plus. All rights reserved.
+          © {currentYear} NovaMed. All rights reserved.
         </div>
       </div>
     </footer>

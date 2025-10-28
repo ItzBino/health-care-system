@@ -170,6 +170,7 @@ export const fetchMedicalReport = async (req, res) => {
 export const getAllDoctors = async (req, res) => {
   try {
     const doctors = await fetchDoctors();
+    console.log(doctors)
     res.status(200).json({ success: true, data: doctors });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

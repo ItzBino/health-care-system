@@ -18,8 +18,8 @@ const UserProvider = ({ children }) => {
       const response = await api.get("/api/patient/doctor-profiles");
       // console.log(response.data.data);
       if (response.data.success) {
+        console.log("doctors:",response.data.data);
         setDoctor(response.data.data);
-        console.log(response.data.data);
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -58,6 +58,7 @@ const UserProvider = ({ children }) => {
       // console.log(response.data.data);
       if (response.data.success && response.data.data) {
         setPatient(response.data.data);
+        console.log("single patient profile: ", response.data.data);
         setHasProfile(true);
         setIsEditMode(false);
       } else {

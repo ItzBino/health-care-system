@@ -18,7 +18,7 @@ const [patientDetails, setPatientDetails] = useState(null);
       const response = await api.get("/api/doctor/get-profile");
       if (response.data.success && response.data.data) {
         setDoctorProfile(response.data.data);
-        console.log(response.data.data);
+        console.log("single doctor profile: ", response.data.data);
         setHasProfile(true);
         setEditMode(false); // show view mode initially
       } else {

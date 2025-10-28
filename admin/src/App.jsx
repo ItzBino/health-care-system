@@ -1,35 +1,37 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
+import Login from "./components/Login";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Dashboard from "./pages/Dashboard";
+import Doctors from "./pages/Doctors";
+import Prescriptions from "./pages/Prescriptions";
+import Patients from "./pages/Patients";
+import Reports from "./pages/Reports";
+import Appointments from "./pages/Appointments";
 
+const App = () => {
+  const {token} = useContext(AuthContext);
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div>
+      {token ? (
+        <div>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/doctors" element={<Doctors />} />
+            <Route path="/patients" element={<Patients/>} />
+            <Route path="/appointments" element={<Appointments/>} />
+            <Route path="/script/:id" element={<Prescriptions />} />
+            <Route path="/reports/:id" element={<Reports/>} />
+          </Routes>
+        </div>
+      ) : (
+        <Login />
+      )}
+    </div>
+  );
+};
 
-export default App
+export default App;

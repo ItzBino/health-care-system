@@ -20,14 +20,14 @@ import BookingPage from "./pages/common/BookingPage";
 import PrescriptionForm from "./pages/doctor/PrescriptionForm";
 import MedicalReportForm from "./pages/doctor/MedicalReportForm";
 import DoctorProfile from "./pages/doctor/DoctorProfile";
-import SuccessPage from "./pages/SuccessPage";
-import MyAppointments from "./pages/doctor/MyAppointments"
+import MyAppointments from "./pages/doctor/MyAppointments";
+import ProtectedRoute from "./route/ProtectedRoutes";
 
 const App = () => {
   const [showRegister, setShowRegister] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const { loading ,userRole} = useContext(AuthContext);
-  console.log(userRole)
+  const { loading, userRole } = useContext(AuthContext);
+  console.log(userRole);
 
   const switchToLogin = () => {
     setShowRegister(false);
@@ -38,8 +38,8 @@ const App = () => {
     setShowLogin(false);
     setTimeout(() => setShowRegister(true), 200); // Small delay for smooth transition
   };
-  if(loading){
-    return <div>Loading...</div>
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -50,18 +50,27 @@ const App = () => {
         <Route path="/about" element={<About />} />
 
         <Route path="/settings" element={<Settings />} />
-        <Route path="/prescription-form/:patientId" element={<PrescriptionForm />} />
+        <Route
+          path="/prescription-form/:patientId"
+          element={<PrescriptionForm />}
+        />
         <Route path="/report-form/:patientId" element={<MedicalReportForm />} />
 
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/doctors/:docId" element={<DoctorDetails />} />
-        <Route path="/booking/:docId" element={<BookingPage />} />
-        <Route path="/checkout-success" element={<SuccessPage/>} />
+        <Route
+          path="/booking/:docId"
+          element={
+            <ProtectedRoute openLoginModal={() => setShowLogin(true)}>
+              <BookingPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/profile"
           element={
-            userRole === "PATIENT" ? <PatientDashboard/>:<DoctorDashboard />   
+            userRole === "PATIENT" ? <PatientDashboard /> : <DoctorDashboard />
           }
         >
           {/* Patient routes */}
