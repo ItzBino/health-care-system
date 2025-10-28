@@ -29,8 +29,9 @@ app.use(cookieParser())
 
 // routes
 app.get('/', (req, res) => {
-    res.status(200).json({ success: true, message: 'API is running' }).send('API is running...')
-})
+  res.status(200).json({ success: true, message: 'API is running' });
+});
+
 app.use('/api/patient', patientRoute)
 app.use('/api/doctor', doctorRoute)
 app.use('/api/admin', adminRoute)
