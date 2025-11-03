@@ -92,8 +92,13 @@ const Prescriptions = () => {
       setPrescriptions((prev) =>
         prev.map((p) => (p._id === prescriptionId ? res.data.data : p))
       );
+      if(res.data.success) {
+toast("updated successfully");
+      }
+      
     } catch (err) {
       console.error("Failed to update completion:", err);
+      toast("Failed to update");
     } finally {
       setUpdatingCompletion(null);
     }
@@ -295,7 +300,11 @@ const Prescriptions = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <UserCheck className="w-6 h-6 text-green-600" />
+                       <img
+                      src={p.patient?.image || "/default-doctor.png"}
+                      alt={p.patient?.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+                    />
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">{p.patient?.name}</p>
@@ -352,7 +361,7 @@ const Prescriptions = () => {
 
                   <div className="space-y-3">
                     {p.medications.slice(0, expandedMeds[p._id] ? undefined : 2).map((med, i) => (
-                      <div key={i} className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-100">
+                      <div key={i} className="bg-linear-to-r from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-100">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             {getDosageIcon(med.dosage)}
@@ -444,7 +453,7 @@ const Prescriptions = () => {
                         disabled={updatingCompletion === p._id}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
                       {updatingCompletion === p._id && (
                         <Loader2 className="absolute -right-8 w-4 h-4 text-blue-600 animate-spin" />
                       )}

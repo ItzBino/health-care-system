@@ -1,39 +1,115 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Calendar,
   Clock,
   User,
-  MapPin,
-  Phone,
   Search,
-  Filter,
-  ChevronRight,
   AlertCircle,
   CheckCircle,
   XCircle,
   CalendarX,
-  Video,
-  Building,
   MoreVertical,
   FileText,
   ClipboardList,
   MessageSquare,
   Stethoscope,
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import { api } from "../../api/auth";
 import { NavLink } from "react-router-dom";
 
+// MINIMALIST STATUS STYLES
+const STATUS_STYLES = {
+  CONFIRMED: {
+    bg: "bg-blue-100",
+    text: "text-blue-800",
+    icon: Clock,
+    label: "Confirmed",
+  },
+  COMPLETED: {
+    bg: "bg-green-100",
+    text: "text-green-800",
+    icon: CheckCircle,
+    label: "Completed",
+  },
+  CANCELLED: {
+    bg: "bg-red-100",
+    text: "text-red-800",
+    icon: XCircle,
+    label: "Cancelled",
+  },
+  REQUESTED: {
+    bg: "bg-yellow-100",
+    text: "text-yellow-800",
+    icon: AlertCircle,
+    label: "Requested",
+  },
+};
+
+// Helpers
+const getStatusStyle = (status) => {
+  if (!status) return STATUS_STYLES.REQUESTED;
+  const key = String(status).toUpperCase();
+  return STATUS_STYLES[key] || STATUS_STYLES.REQUESTED;
+};
+
+const formatDate = (val) => {
+  if (!val) return "N/A";
+  try {
+    if (val.includes("_")) {
+      const [day, month, year] = val.split("_").map(Number);
+      const d = new Date(year, month - 1, day);
+      return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    }
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return "Invalid Date";
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  } catch {
+    return "Invalid Date";
+  }
+};
+
+const to12h = (t) => {
+  const [h, m = "00"] = t.split(":").map((n) => parseInt(n, 10));
+  const hour = ((h + 11) % 12) + 1;
+  const ampm = h >= 12 ? "PM" : "AM";
+  return `${String(hour).padStart(2, "0")}:${String(m).padStart(2, "0")} ${ampm}`;
+};
+
+const formatTime = (time) => {
+  if (!time) return "N/A";
+  if (time.includes("AM") || time.includes("PM")) return time;
+  if (time.includes("-")) {
+    const [start, end] = time.split("-");
+    return `${to12h(start.trim())} - ${to12h(end.trim())}`;
+  }
+  if (time.includes(":")) return to12h(time.trim());
+  return time;
+};
+
 const MyAppointments = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("ALL");
   const [appointments, setAppointments] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
   const fetchBookedAppointments = async () => {
-    const response = await api.get("/api/doctor/appointment");
-    if (response.data.success) {
-      setAppointments(response.data.data);
-      console.log("doctor appointments: ", response.data.data);
+    try {
+      setLoading(true);
+      setErr("");
+      const response = await api.get("/api/doctor/appointment");
+      if (response.data?.success) {
+        setAppointments(response.data.data || []);
+      } else {
+        setErr("Failed to load appointments.");
+      }
+    } catch (e) {
+      setErr("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,399 +117,233 @@ const MyAppointments = () => {
     fetchBookedAppointments();
   }, []);
 
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      UPCOMING: {
-        bg: "bg-blue-50 border-blue-200",
-        text: "text-blue-700",
-        icon: Clock,
-        label: "Upcoming",
-      },
-      COMPLETED: {
-        bg: "bg-green-50 border-green-200",
-        text: "text-green-700",
-        icon: CheckCircle,
-        label: "Completed",
-      },
-      CANCELLED: {
-        bg: "bg-red-50 border-red-200",
-        text: "text-red-700",
-        icon: XCircle,
-        label: "Cancelled",
-      },
-      REQUESTED: {
-        bg: "bg-yellow-50 border-yellow-200",
-        text: "text-yellow-700",
-        icon: AlertCircle,
-        label: "Requested",
-      },
-      PENDING: {
-        bg: "bg-orange-50 border-orange-200",
-        text: "text-orange-700",
-        icon: AlertCircle,
-        label: "Pending",
-      },
-    };
-    return statusConfig[status?.toUpperCase()] || statusConfig.PENDING;
-  };
+  useEffect(() => {
+    const close = () => setDropdownOpen(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, []);
 
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+  const filteredAppointments = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return appointments.filter((a) => {
+      const matchesSearch = !q ||
+        a?.patient?.name?.toLowerCase().includes(q) ||
+        a?.reason?.toLowerCase().includes(q) ||
+        a?._id?.toLowerCase().includes(q);
+      const status = String(a?.status || "").toUpperCase();
+      const matchesStatus = filterStatus === "ALL" ? true : status === filterStatus;
+      return matchesSearch && matchesStatus;
+    });
+  }, [appointments, searchTerm, filterStatus]);
 
-  const formatTime = (timeString) => {
-    // If timeString is already formatted, return it
-    if (timeString?.includes('AM') || timeString?.includes('PM')) return timeString;
-    // Otherwise format it
-    return timeString;
-  };
-
-  // Filter appointments based on search and status
-  const filteredAppointments = appointments.filter((appointment) => {
-    const matchesSearch = 
-      appointment.patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.reason?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = 
-      filterStatus === "all" || 
-      appointment.status?.toUpperCase() === filterStatus.toUpperCase();
-    
-    return matchesSearch && matchesStatus;
-  });
-
-  // Calculate stats
-  const stats = {
+  const stats = useMemo(() => ({
     total: appointments.length,
-    upcoming: appointments.filter(a => a.status?.toUpperCase() === 'UPCOMING').length,
-    completed: appointments.filter(a => a.status?.toUpperCase() === 'COMPLETED').length,
-    cancelled: appointments.filter(a => a.status?.toUpperCase() === 'CANCELLED').length,
-  };
+    confirmed: appointments.filter((a) => String(a.status).toUpperCase() === "CONFIRMED").length,
+    completed: appointments.filter((a) => String(a.status).toUpperCase() === "COMPLETED").length,
+    cancelled: appointments.filter((a) => String(a.status).toUpperCase() === "CANCELLED").length,
+  }), [appointments]);
 
-  if (appointments.length === 0) {
+  if (loading) {
     return (
-      <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-        {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            My Appointments
-          </h2>
-          <p className="text-gray-600">
-            Manage and track all your medical appointments
-          </p>
+      <div className="space-y-6 animate-pulse">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="h-7 w-56 bg-slate-200 rounded"></div>
+            <div className="h-4 w-72 bg-slate-200 rounded"></div>
+          </div>
+          <div className="h-10 w-28 bg-slate-200 rounded-lg"></div>
         </div>
-
-        {/* Search and Filter Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search appointments..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div className="flex gap-2">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-              >
-                <option value="all">All Status</option>
-                <option value="upcoming">Upcoming</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="requested">Requested</option>
-              </select>
-              <button className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                <span className="hidden sm:inline">Filter</span>
-              </button>
-            </div>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-24 bg-slate-100 rounded-xl"></div>
+          ))}
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600 text-sm">Total Appointments</span>
-              <Calendar className="w-4 h-4 text-gray-400" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900">0</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600 text-sm">Upcoming</span>
-              <Clock className="w-4 h-4 text-blue-400" />
-            </div>
-            <p className="text-2xl font-bold text-blue-600">0</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600 text-sm">Completed</span>
-              <CheckCircle className="w-4 h-4 text-green-400" />
-            </div>
-            <p className="text-2xl font-bold text-green-600">0</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600 text-sm">Cancelled</span>
-              <XCircle className="w-4 h-4 text-red-400" />
-            </div>
-            <p className="text-2xl font-bold text-red-600">0</p>
-          </div>
-        </div>
-
-        {/* Empty State */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sm:p-12">
-          <div className="text-center max-w-md mx-auto">
-            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CalendarX className="w-12 h-12 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              No Appointments Yet
-            </h3>
-            <p className="text-gray-600 mb-8">
-              You haven't received any appointment requests yet
-            </p>
-          </div>
+        <div className="h-14 bg-slate-100 rounded-xl"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-56 bg-slate-100 rounded-xl" />
+          ))}
         </div>
       </div>
     );
   }
 
-  // If there are appointments
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-          My Appointments
-        </h2>
-        <p className="text-gray-600">
-          Manage and track all your medical appointments
-        </p>
+    <div className="space-y-6">
+      {err && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" />
+          <span>{err}</span>
+          <button onClick={fetchBookedAppointments} className="ml-auto inline-flex items-center gap-2 text-red-700 hover:text-red-900">
+            <RefreshCw className="w-4 h-4" /> Retry
+          </button>
+        </div>
+      )}
+
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Appointments</h1>
+          <p className="mt-1 text-slate-500">Manage and track your scheduled appointments.</p>
+        </div>
+        <button
+          onClick={fetchBookedAppointments}
+          className="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-lg transition-colors w-full sm:w-auto"
+        >
+          <RefreshCw className="w-4 h-4" /> Refresh
+        </button>
       </div>
 
-      {/* Search and Filter Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by patient name or reason..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      {/* KPI Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="Total" value={stats.total} icon={Calendar} color="text-slate-500" />
+        <StatCard label="Confirmed" value={stats.confirmed} icon={Clock} color="text-blue-600" />
+        <StatCard label="Completed" value={stats.completed} icon={CheckCircle} color="text-green-600" />
+        <StatCard label="Cancelled" value={stats.cancelled} icon={XCircle} color="text-red-600" />
+      </div>
+      
+      {/* Filters + Search */}
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {["ALL", "CONFIRMED", "REQUESTED", "COMPLETED", "CANCELLED"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilterStatus(f)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition
+                  ${filterStatus === f
+                    ? "bg-blue-700 text-white"
+                    : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
+                  }`}
+              >
+                {f[0] + f.slice(1).toLowerCase()}
+              </button>
+            ))}
+          </div>
+
+          <div className="md:ml-auto w-full md:w-80">
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by patient, reason, or ID..."
+                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Appointments List */}
+      {appointments.length === 0 ? (
+        <EmptyState title="No Appointments Yet" message="You haven't received any appointment requests." icon={CalendarX} />
+      ) : filteredAppointments.length === 0 ? (
+        <EmptyState title="No Matching Appointments" message="Try adjusting your search or filter criteria." icon={Search} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredAppointments.map((appointment) => (
+            <AppointmentCard key={appointment._id} appointment={appointment} dropdownOpen={dropdownOpen} setDropdownOpen={setDropdownOpen} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Sub-components for better organization
+const StatCard = ({ label, value, icon: Icon, color }) => (
+  <div className="bg-white p-4 rounded-xl border border-slate-200">
+    <div className="flex items-center justify-between">
+      <p className="text-sm font-medium text-slate-500">{label}</p>
+      <Icon className={`w-5 h-5 ${color}`} />
+    </div>
+    <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
+  </div>
+);
+
+const EmptyState = ({ title, message, icon: Icon }) => (
+  <div className="text-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+    <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
+      <Icon className="w-8 h-8 text-slate-500" />
+    </div>
+    <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
+    <p className="text-slate-500 mt-1">{message}</p>
+  </div>
+);
+
+const AppointmentCard = ({ appointment, dropdownOpen, setDropdownOpen }) => {
+  const s = getStatusStyle(appointment.status);
+  const StatusIcon = s.icon;
+  const patient = appointment.patient || {};
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 hover:shadow-lg hover:border-slate-300 transition-all duration-300">
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <img
+              src={patient.image || "/default-avatar.png"}
+              alt={patient.name || "Patient"}
+              className="w-12 h-12 rounded-full object-cover ring-2 ring-slate-100"
             />
+            <div>
+              <h3 className="font-semibold text-slate-900">{patient.name || "Patient"}</h3>
+              <p className="text-sm text-slate-500">ID: #{String(patient._id || "").slice(-6) || "N/A"}</p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+          <div className="relative">
+            <button
+              onClick={(e) => { e.stopPropagation(); setDropdownOpen(dropdownOpen === appointment._id ? null : appointment._id); }}
+              className="p-1.5 hover:bg-slate-100 rounded-lg"
             >
-              <option value="all">All Status</option>
-              <option value="upcoming">Upcoming</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="requested">Requested</option>
-            </select>
-            <button className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
-              <Filter className="w-4 h-4" />
-              <span className="hidden sm:inline">Filter</span>
+              <MoreVertical className="w-5 h-5 text-slate-400" />
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
-          <div className="flex items-center justify-between mb-1 sm:mb-2">
-            <span className="text-gray-600 text-xs sm:text-sm">Total</span>
-            <Calendar className="w-4 h-4 text-gray-400" />
-          </div>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
-          <div className="flex items-center justify-between mb-1 sm:mb-2">
-            <span className="text-gray-600 text-xs sm:text-sm">Upcoming</span>
-            <Clock className="w-4 h-4 text-blue-400" />
-          </div>
-          <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.upcoming}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
-          <div className="flex items-center justify-between mb-1 sm:mb-2">
-            <span className="text-gray-600 text-xs sm:text-sm">Completed</span>
-            <CheckCircle className="w-4 h-4 text-green-400" />
-          </div>
-          <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.completed}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
-          <div className="flex items-center justify-between mb-1 sm:mb-2">
-            <span className="text-gray-600 text-xs sm:text-sm">Cancelled</span>
-            <XCircle className="w-4 h-4 text-red-400" />
-          </div>
-          <p className="text-xl sm:text-2xl font-bold text-red-600">{stats.cancelled}</p>
-        </div>
-      </div>
-
-      {/* Appointments Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-        {filteredAppointments.map((appointment) => {
-          const statusConfig = getStatusBadge(appointment.status);
-          const StatusIcon = statusConfig.icon;
-
-          return (
-            <div
-              key={appointment._id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200"
-            >
-              {/* Card Header */}
-              <div className="p-4 sm:p-5 border-b border-gray-100">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <img
-                        src={appointment.patient.image || "/default-avatar.png"}
-                        alt={appointment.patient.name}
-                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-gray-200"
-                      />
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                        {appointment.patient.name}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-gray-500">
-                        Patient ID: #{appointment.patient._id.slice(-6)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <button
-                      onClick={() => setDropdownOpen(dropdownOpen === appointment._id ? null : appointment._id)}
-                      className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <MoreVertical className="w-5 h-5 text-gray-400" />
-                    </button>
-                    {dropdownOpen === appointment._id && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                        <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                          View Details
-                        </button>
-                        <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
-                          Contact Patient
-                        </button>
-                        <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600">
-                          Cancel Appointment
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Status Badge */}
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${statusConfig.bg} ${statusConfig.text}`}>
-                  <StatusIcon className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">{statusConfig.label}</span>
-                </div>
+            {dropdownOpen === appointment._id && (
+              <div onClick={(e) => e.stopPropagation()} className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 z-10">
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">View Details</button>
+                <button className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Contact Patient</button>
+                <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Cancel</button>
               </div>
-
-              {/* Card Body */}
-              <div className="p-4 sm:p-5 space-y-3">
-                {/* Date and Time */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4" />
-                    <span className="text-sm font-medium">{formatDate(appointment.slotDate)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm font-medium">{formatTime(appointment.slotTime)}</span>
-                  </div>
-                </div>
-
-                {/* Reason */}
-                {appointment.reason && (
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <Stethoscope className="w-4 h-4 text-gray-500 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 mb-1">Reason for visit</p>
-                        <p className="text-sm text-gray-700">{appointment.reason}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Notes */}
-                {appointment.notes && (
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <MessageSquare className="w-4 h-4 text-blue-500 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-xs text-blue-600 mb-1">Notes</p>
-                        <p className="text-sm text-gray-700">{appointment.notes}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons for Requested Status */}
-                {appointment.status === "REQUESTED" && (
-                  <div className="flex gap-2 pt-3 border-t border-gray-100">
-                    <NavLink
-                      to={`/prescription-form/${appointment.patient._id}`}
-                      className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                    >
-                      <FileText className="w-4 h-4" />
-                      <span>Prescription</span>
-                    </NavLink>
-                    <NavLink
-                      to={`/report-form/${appointment.patient._id}`}
-                      className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                    >
-                      <ClipboardList className="w-4 h-4" />
-                      <span>Report</span>
-                    </NavLink>
-                  </div>
-                )}
-
-                {/* View Details Link for other statuses
-                {appointment.status !== "REQUESTED" && (
-                  <div className="pt-3 border-t border-gray-100">
-                    <button className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium">
-                      <span>View Details</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                )} */}
-              </div>
-            </div>
-          );
-        })}
+            )}
+          </div>
+        </div>
+        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${s.bg} ${s.text}`}>
+          <StatusIcon className="w-3.5 h-3.5" />
+          <span className="text-xs font-medium">{s.label}</span>
+        </div>
       </div>
-
-      {/* Empty State for filtered results */}
-      {filteredAppointments.length === 0 && appointments.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sm:p-12">
-          <div className="text-center max-w-md mx-auto">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-10 h-10 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No matching appointments found
-            </h3>
-            <p className="text-gray-600">
-              Try adjusting your search or filter criteria
-            </p>
+      <div className="p-4 space-y-3 text-sm">
+        <div className="flex items-center justify-between text-slate-700">
+          <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-slate-400" /><span>{formatDate(appointment.slotDate)}</span></div>
+          <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /><span>{formatTime(appointment.slotTime)}</span></div>
+        </div>
+        {appointment.reason && (
+          <div className="bg-slate-50 rounded-md p-3">
+            <p className="text-xs text-slate-500 mb-1">Reason for visit</p>
+            <p className="text-slate-800">{appointment.reason}</p>
+          </div>
+        )}
+        {appointment.notes && (
+          <div className="bg-slate-50 rounded-md p-3">
+            <p className="text-xs text-slate-500 mb-1">Additional Notes</p>
+            <p className="text-slate-800">{appointment.notes}</p>
+          </div>
+        )}
+      </div>
+      {String(appointment.status).toUpperCase() === "CONFIRMED" && (
+        <div className="p-4">
+          <div className="flex gap-2">
+            {patient?._id ? (
+              <>
+                <NavLink to={`/prescription-form/${patient._id}`} className="flex-1 flex items-center justify-center gap-2 bg-blue-700 text-white px-3 py-2 rounded-lg hover:bg-blue-800 transition-colors font-semibold">
+                  <FileText className="w-4 h-4" /><span>Prescription</span>
+                </NavLink>
+                <NavLink to={`/report-form/${patient._id}`} className="flex-1 flex items-center justify-center gap-2 bg-slate-200 text-slate-700 px-3 py-2 rounded-lg hover:bg-slate-300 transition-colors font-semibold">
+                  <ClipboardList className="w-4 h-4" /><span>Report</span>
+                </NavLink>
+              </>
+            ) : <div className="text-xs text-slate-500 w-full text-center">Patient ID unavailable</div>}
           </div>
         </div>
       )}

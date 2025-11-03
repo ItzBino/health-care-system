@@ -96,15 +96,11 @@ const Appointment = () => {
         try {
             const { data } = await api.post(`/api/book-appointment/${docId}`, { slotDate, slotTime, notes, reason })
             if (data.success) {
-                alert(data.message)
                 fetchDoctors()
                 navigate('/profile/my-appointments')
-            } else {
-                alert(data.message)
             }
         } catch (error) {
             console.log(error)
-            alert(error.message)
         }
     }
 

@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { AdminContext } from "../context/AdminContext";
 import { api } from "../api/auth";
+import { toast } from "react-toastify";
 import {
   Calendar,
   Clock,
@@ -25,7 +26,7 @@ import {
   MoreVertical,
   CalendarDays,
   UserCheck,
-  Loader2
+  Loader2,
 } from "lucide-react";
 
 const Appointments = () => {
@@ -39,36 +40,41 @@ const Appointments = () => {
     REQUESTED: {
       color: "bg-yellow-100 text-yellow-800 border-yellow-300",
       icon: <AlertCircle className="w-4 h-4" />,
-      label: "Requested"
+      label: "Requested",
     },
     CONFIRMED: {
       color: "bg-blue-100 text-blue-800 border-blue-300",
       icon: <CheckCircle className="w-4 h-4" />,
-      label: "Confirmed"
+      label: "Confirmed",
     },
     RESCHEDULED: {
       color: "bg-orange-100 text-orange-800 border-orange-300",
       icon: <RefreshCw className="w-4 h-4" />,
-      label: "Rescheduled"
+      label: "Rescheduled",
     },
     CANCELLED: {
       color: "bg-red-100 text-red-800 border-red-300",
       icon: <XCircle className="w-4 h-4" />,
-      label: "Cancelled"
+      label: "Cancelled",
     },
     COMPLETED: {
       color: "bg-green-100 text-green-800 border-green-300",
       icon: <CheckCircle className="w-4 h-4" />,
-      label: "Completed"
-    }
+      label: "Completed",
+    },
   };
 
   // Filter appointments
-  const filteredAppointments = appointments?.filter(appointment => {
-    const matchesSearch = 
-      appointment.doctor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.patient?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === "ALL" || appointment.status === filterStatus;
+  const filteredAppointments = appointments?.filter((appointment) => {
+    const matchesSearch =
+      appointment.doctor?.name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      appointment.patient?.name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      filterStatus === "ALL" || appointment.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
@@ -86,12 +92,13 @@ const Appointments = () => {
             appt._id === id ? { ...appt, ...data.appointment } : appt
           )
         );
+        toast(" updated successfully");
       } else {
-        alert("Failed to update appointment");
+        toast("Failed to update appointment");
       }
     } catch (error) {
       console.error(error);
-      alert("Error updating appointment");
+      toast("Error updating appointment");
     } finally {
       setLoading(null);
     }
@@ -106,9 +113,12 @@ const Appointments = () => {
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CalendarDays className="w-12 h-12 text-gray-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">No Appointments Yet</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              No Appointments Yet
+            </h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              No appointments have been registered. They will appear here once patients book appointments.
+              No appointments have been registered. They will appear here once
+              patients book appointments.
             </p>
           </div>
         </div>
@@ -190,7 +200,11 @@ const Appointments = () => {
               {/* Card Header */}
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border ${statusConfig[appointment.status]?.color}`}>
+                  <div
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border ${
+                      statusConfig[appointment.status]?.color
+                    }`}
+                  >
                     {statusConfig[appointment.status]?.icon}
                     {statusConfig[appointment.status]?.label}
                   </div>
@@ -231,7 +245,9 @@ const Appointments = () => {
                     className="w-14 h-14 rounded-full object-cover border-2 border-gray-200"
                   />
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900">{appointment.doctor?.name}</p>
+                    <p className="font-semibold text-gray-900">
+                      {appointment.doctor?.name}
+                    </p>
                     <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                       <Mail className="w-3 h-3" />
                       {appointment.doctor?.email}
@@ -257,7 +273,9 @@ const Appointments = () => {
                     className="w-14 h-14 rounded-full object-cover border-2 border-gray-200"
                   />
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900">{appointment.patient?.name}</p>
+                    <p className="font-semibold text-gray-900">
+                      {appointment.patient?.name}
+                    </p>
                     <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                       <Mail className="w-3 h-3" />
                       {appointment.patient?.email || "patient@example.com"}
@@ -282,7 +300,11 @@ const Appointments = () => {
                       <select
                         value={appointment.status}
                         onChange={(e) =>
-                          handleStatusChange(appointment._id, e.target.value, appointment.isCompleted)
+                          handleStatusChange(
+                            appointment._id,
+                            e.target.value,
+                            appointment.isCompleted
+                          )
                         }
                         disabled={loading === appointment._id}
                         className="w-full appearance-none px-4 py-2.5 pr-10 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -308,12 +330,16 @@ const Appointments = () => {
                         type="checkbox"
                         checked={appointment.isCompleted}
                         onChange={(e) =>
-                          handleStatusChange(appointment._id, appointment.status, e.target.checked)
+                          handleStatusChange(
+                            appointment._id,
+                            appointment.status,
+                            e.target.checked
+                          )
                         }
                         disabled={loading === appointment._id}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                     </label>
                   </div>
 
@@ -328,11 +354,13 @@ const Appointments = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 mt-4">
-                  <NavLink to='/patients'><button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                    <Eye className="w-4 h-4" />
-                    View Details
-                  </button></NavLink>
-                  
+                  <NavLink to="/patients">
+                    <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                      <Eye className="w-4 h-4" />
+                      View Details
+                    </button>
+                  </NavLink>
+
                   <button className="flex items-center justify-center p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                     <Edit className="w-4 h-4 text-gray-600" />
                   </button>
@@ -349,8 +377,12 @@ const Appointments = () => {
         {filteredAppointments?.length === 0 && (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No appointments found</h3>
-            <p className="text-gray-600">Try adjusting your search or filters</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No appointments found
+            </h3>
+            <p className="text-gray-600">
+              Try adjusting your search or filters
+            </p>
           </div>
         )}
       </div>

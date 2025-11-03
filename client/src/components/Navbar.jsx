@@ -76,32 +76,11 @@ const Navbar = ({ setShowRegister }) => {
       color: "blue"
     },
     {
-      name: "Appointments",
-      icon: Calendar,
-      description: "Manage appointments",
-      onClick: () => navigate("/appointments"),
-      color: "green"
-    },
-    {
-      name: "Medical Records",
-      icon: FileText,
-      description: "View health records",
-      onClick: () => navigate("/records"),
-      color: "purple"
-    },
-    {
       name: "Settings",
       icon: Settings,
       description: "Account settings",
       onClick: () => navigate("/settings"),
       color: "gray"
-    },
-    {
-      name: "Help & Support",
-      icon: HelpCircle,
-      description: "Get help",
-      onClick: () => navigate("/help"),
-      color: "yellow"
     },
     {
       name: "Sign Out",

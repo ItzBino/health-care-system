@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children, openLoginModal }) => {
-  const { token } = useContext(AuthContext);
+  const { token,user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,10 +23,10 @@ const ProtectedRoute = ({ children, openLoginModal }) => {
       openLoginModal(); // open login modal
       navigate("/"); // stay on home or prevent navigation
     }
-  }, [currentUser, navigate, openLoginModal]);
+  }, [user, navigate, openLoginModal]);
 
   // Only render children if logged in
-  return currentUser ? children : null;
+  return user ? children : null;
 };
 
 export default ProtectedRoute;

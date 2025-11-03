@@ -10,6 +10,7 @@ import Prescriptions from "./pages/Prescriptions";
 import Patients from "./pages/Patients";
 import Reports from "./pages/Reports";
 import Appointments from "./pages/Appointments";
+import {ToastContainer} from 'react-toastify';
 
 const App = () => {
   const {token} = useContext(AuthContext);
@@ -17,9 +18,11 @@ const App = () => {
     <div>
       {token ? (
         <div>
+          <ToastContainer />
           <Navbar />
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/login" element={<Login />}/>
             <Route path="/doctors" element={<Doctors />} />
             <Route path="/patients" element={<Patients/>} />
             <Route path="/appointments" element={<Appointments/>} />

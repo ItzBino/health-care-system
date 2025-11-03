@@ -5,6 +5,7 @@ import Prescription from "../models/Prescription.js";
 import MedicalReport from "../models/MedicalReport.js";
 import Appointment from "../models/Appointment.js";
 import mongoose from "mongoose";
+import PatientProfile from "../models/PatientProfile.js";
 
 export const login = async ({ email, password }) => {
   if (!email || !password) {
@@ -70,7 +71,7 @@ export const updateEmailVerifiedService = async (id, emailVerified) => {
 
 export const getPendingPrescriptions = async (id) => {
   // Fetch prescriptions where isCompleted is false
-  const prescriptions = await Prescription.find({patient: new mongoose.Types.ObjectId(id), isCompleted: false })
+  const prescriptions = await Prescription.find({patient:id, isCompleted: false })
     .populate("patient", "-password")
     .populate("doctor", "-password")
     .sort({ createdAt: -1 });
@@ -89,7 +90,7 @@ export const getMedicalReports = async (id) => {
 
 
 export const getAllPatients = async () => {
-  const patients = await User.find({ role: "PATIENT" }).select("-password");
+  const patients = await PatientProfile.find().populate("user", "-password");
   return patients;
 };
 

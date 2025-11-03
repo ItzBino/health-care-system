@@ -31,6 +31,7 @@ const AuthContextProvider = ({ children }) => {
     setAdmin(null);
     setToken(null);
     localStorage.removeItem("aToken");
+    navigate("/login")
   };
   const value = {
     admin,

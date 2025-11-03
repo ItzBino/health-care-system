@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config(); // ✅ must be first
+dotenv.config(); 
 
 import express from 'express';
 import cors from 'cors';
@@ -20,10 +20,12 @@ connectCloudinary();
 
 // middlewares
 app.use(express.json());
+
 app.use(cors({
   origin: [process.env.CLIENT_URL, process.env.ADMIN_URL],
   credentials: true,
 }));
+
 app.use(cookieParser());
 
 // test route

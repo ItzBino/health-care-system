@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 
 const Patients = () => {
-  const { patients } = useContext(AdminContext);
+  const { patients, allReports,allPrescriptions } = useContext(AdminContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGender, setFilterGender] = useState('all');
   const [filterAge, setFilterAge] = useState('all');
@@ -59,8 +59,8 @@ const Patients = () => {
 
   // Filter patients
   const filteredPatients = patients?.filter(patient => {
-    const matchesSearch = patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          patient.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = patient?.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          patient?.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesGender = filterGender === 'all' || patient.gender === filterGender;
     
     // Age filtering
@@ -127,7 +127,7 @@ const Patients = () => {
 
   if (!patients || patients.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-12">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -142,7 +142,7 @@ const Patients = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50">
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -293,14 +293,14 @@ const Patients = () => {
                     <div className="flex items-center gap-4">
                       {/* Patient Image */}
                       <div className="relative">
-                        {patient.image ? (
+                        {patient?.user?.image ? (
                           <img
-                            src={patient.image}
-                            alt={patient.name}
+                            src={patient.user.image}
+                            alt={patient.user.name}
                             className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
                           />
                         ) : (
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                          <div className="w-16 h-16 rounded-full bg-linear-to-b from-blue-400 to-blue-600 flex items-center justify-center">
                             <User className="w-8 h-8 text-white" />
                           </div>
                         )}
@@ -313,10 +313,10 @@ const Patients = () => {
 
                       {/* Basic Info */}
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{patient.name || 'Unknown'}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{patient.user?.name || 'Unknown'}</h3>
                         <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                           <Mail className="w-3 h-3" />
-                          {patient.email}
+                          {patient.user?.email}
                         </p>
                       </div>
                     </div>
@@ -395,7 +395,7 @@ const Patients = () => {
                   {/* Action Buttons */}
                   <div className="flex gap-2 pt-4 border-t border-gray-100">
                     <NavLink 
-                      to={`/reports/${patient._id}`}
+                      to={`/reports/${patient.user._id}`}
                       className="flex-1"
                     >
                       <button className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm">
@@ -404,7 +404,7 @@ const Patients = () => {
                       </button>
                     </NavLink>
                     <NavLink 
-                      to={`/script/${patient._id}`}
+                      to={`/script/${patient.user._id}`}
                       className="flex-1"
                     >
                       <button className="w-full px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm">
@@ -415,17 +415,13 @@ const Patients = () => {
                   </div>
 
                   {/* Quick Stats */}
-                  <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-gray-100">
+                  <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-gray-100">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-gray-900"></p>
-                      <p className="text-xs text-gray-500">Visits</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-blue-600"></p>
+                      <p className="text-2xl font-bold text-blue-600">{allReports.length}</p>
                       <p className="text-xs text-gray-500">Reports</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-green-600">5</p>
+                      <p className="text-2xl font-bold text-green-600">{allPrescriptions.length}</p>
                       <p className="text-xs text-gray-500">Scripts</p>
                     </div>
                   </div>
@@ -455,3 +451,5 @@ const Patients = () => {
 };
 
 export default Patients;
+
+

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext,useEffect } from "react";
 import { UserContext } from "../../context/UserContext";
 import {
   User,
@@ -26,6 +26,7 @@ import {
   Tag,
   PhoneCall
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 const PatientProfileForm = () => {
   const [profile, setProfile] = useState({
@@ -43,6 +44,13 @@ const PatientProfileForm = () => {
 
   const { createPatientProfile, isEditMode, setIsEditMode,hasProfile,patient } =
     useContext(UserContext);
+
+    useEffect(() => {
+  // Whenever patient data exists, sync it to form
+  if (patient && hasProfile) {
+    setProfile(patient);
+  }
+}, [patient, hasProfile]);
 
   // Handle field changes
   const handleChange = (field, value) =>
@@ -69,15 +77,18 @@ const PatientProfileForm = () => {
   };
 
   // Submit form
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await createPatientProfile(profile);
-    } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Error saving profile");
-    }
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await createPatientProfile(profile);
+    toast("Profile saved successfully");
+    setProfile(profile); // Keep updated data in form
+    setIsEditMode(false); // Exit edit mode
+  } catch (err) {
+    console.error(err);
+    toast(err.response?.data?.message || "Error saving profile");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -531,7 +542,7 @@ const PatientProfileForm = () => {
                   className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <Save className="w-5 h-5" />
-                 {hasProfile ? "Update Profile" : "Create Profile"}
+                 {hasProfile ? "Update" : "Create"}
                 </button>
                 {
                   hasProfile && (  <button

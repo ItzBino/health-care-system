@@ -19,6 +19,7 @@ import {
   StethoscopeIcon,
 } from "lucide-react";
 import { api } from "../api/auth";
+import {toast} from "react-toastify"
 
 const Doctors = () => {
   const { doctors, profile, handleEmailStatus, handleStatusChange,setProfile } =
@@ -52,8 +53,10 @@ const Doctors = () => {
     console.log("Doctor updated:", res.data);
 
     setProfile(prev => prev.map(p => p._id === doctorId ? { ...p, ...payload } : p));
+    toast("status updated successfully");
   } catch (err) {
     console.error("Failed to update doctor:", err);
+    toast("Failed to update status");
   } finally {
     setUpdating(null);
   }
@@ -110,7 +113,7 @@ const Doctors = () => {
 
   if (!doctors || doctors.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50 p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-12">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -132,7 +135,7 @@ const Doctors = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50">
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -324,7 +327,7 @@ const Doctors = () => {
                               className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
                             />
                           ) : (
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                            <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                               <Stethoscope className="w-8 h-8 text-white" />
                             </div>
                           )}

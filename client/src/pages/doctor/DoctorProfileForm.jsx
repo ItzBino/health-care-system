@@ -1,18 +1,27 @@
 import React, { useState, useContext, useEffect } from "react";
 import { DoctorContext } from "../../context/DoctorContext";
 import {
-  EditIcon,
-  Save,
-  X,
-  Plus,
-  Calendar,
+  Edit3 as EditIcon,
+  User,
   GraduationCap,
   ShieldCheck,
   Lock,
-  User,
+  MapPin,
+  Phone,
+  FileText,
+  Briefcase,
+  Tag,
+  Award,
+  Building,
+  CheckCircle,
 } from "lucide-react";
 
-// DisplayProfile Component
+// Import the new Form Content Component
+import DoctorProfileFormContent from "./DoctorProfileFormContent"; 
+import { toast } from "react-toastify";
+
+
+// DisplayProfile Component (remains unchanged)
 const DisplayProfile = ({ doctorProfile, onEdit }) => {
   if (!doctorProfile)
     return (
@@ -22,10 +31,11 @@ const DisplayProfile = ({ doctorProfile, onEdit }) => {
     );
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+   <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4 mb-6">
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 flex items-center gap-2">
+          <User className="w-6 h-6 text-blue-600" />
           Doctor Profile
         </h2>
         <button
@@ -39,36 +49,63 @@ const DisplayProfile = ({ doctorProfile, onEdit }) => {
       {/* Basic Information */}
       <section className="bg-gray-50 rounded-xl p-4 sm:p-6">
         <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2 text-gray-700 mb-4">
-          <User className="w-5 h-5 text-blue-600" /> Basic Information
+          <FileText className="w-5 h-5 text-gray-600" />
+          Basic Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <p className="text-sm text-gray-500">Specialization</p>
-            <p className="font-medium text-gray-800">{doctorProfile.specialization}</p>
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <Tag className="w-4 h-4 text-gray-400" /> Specialization
+            </p>
+            <p className="font-medium text-gray-800">{doctorProfile.specialization || "Not specified"}</p>
           </div>
+
           <div className="space-y-1">
-            <p className="text-sm text-gray-500">License Number</p>
-            <p className="font-medium text-gray-800">{doctorProfile.licenseNumber}</p>
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <Award className="w-4 h-4 text-gray-400" /> License Number
+            </p>
+            <p className="font-medium text-gray-800">{doctorProfile.licenseNumber || "Not provided"}</p>
           </div>
+
           <div className="space-y-1">
-            <p className="text-sm text-gray-500">Clinic Location</p>
-            <p className="font-medium text-gray-800">{doctorProfile.clinicLocation}</p>
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <MapPin className="w-4 h-4 text-gray-400" /> Clinic Location
+            </p>
+            <p className="font-medium text-gray-800">{doctorProfile.clinicLocation || "Not specified"}</p>
           </div>
+
           <div className="space-y-1">
-            <p className="text-sm text-gray-500">Phone Number</p>
-            <p className="font-medium text-gray-800">{doctorProfile.phoneNumber}</p>
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <Phone className="w-4 h-4 text-gray-400" /> Phone Number
+            </p>
+            <p className="font-medium text-gray-800">{doctorProfile.phoneNumber || "Not provided"}</p>
           </div>
+
           <div className="space-y-1 md:col-span-2">
-            <p className="text-sm text-gray-500">Bio</p>
-            <p className="font-medium text-gray-800">{doctorProfile.bio}</p>
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <FileText className="w-4 h-4 text-gray-400" /> Bio
+            </p>
+            <p className="font-medium text-gray-800">{doctorProfile.bio || "No bio provided"}</p>
           </div>
+
           <div className="space-y-1">
-            <p className="text-sm text-gray-500">Consultation Fees</p>
-            <p className="font-medium text-gray-800 text-lg">₹{doctorProfile.fees}</p>
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <Tag className="w-4 h-4 text-gray-400" /> Consultation Fees
+            </p>
+            <p className="font-medium text-gray-800 text-lg">
+              ₹{doctorProfile.fees || "0"}
+            </p>
           </div>
+
           <div className="space-y-1">
-            <p className="text-sm text-gray-500">Experience</p>
-            <p className="font-medium text-gray-800">{doctorProfile.experienceYears} years</p>
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <Briefcase className="w-4 h-4 text-gray-400" /> Experience
+            </p>
+            <p className="font-medium text-gray-800">
+              {doctorProfile.experienceYears
+                ? `${doctorProfile.experienceYears} years`
+                : "Not specified"}
+            </p>
           </div>
         </div>
       </section>
@@ -77,13 +114,15 @@ const DisplayProfile = ({ doctorProfile, onEdit }) => {
       {doctorProfile.education?.length > 0 && (
         <section className="bg-blue-50 rounded-xl p-4 sm:p-6">
           <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2 text-gray-700 mb-4">
-            <GraduationCap className="w-5 h-5 text-blue-600" /> Education
+            <GraduationCap className="w-5 h-5 text-blue-600" />
+            Education
           </h3>
           <div className="space-y-3">
             {doctorProfile.education.map((edu, i) => (
-              <div key={i} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+              <div key={i} className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border">
                 <p className="font-semibold text-gray-800">{edu.degree}</p>
-                <p className="text-gray-600 text-sm sm:text-base">
+                <p className="text-gray-600 text-sm sm:text-base flex items-center gap-2">
+                  <Building className="w-4 h-4 text-gray-400" />
                   {edu.college} • {edu.passoutYear}
                 </p>
               </div>
@@ -96,11 +135,16 @@ const DisplayProfile = ({ doctorProfile, onEdit }) => {
       {doctorProfile.insurance?.length > 0 && (
         <section className="bg-green-50 rounded-xl p-4 sm:p-6">
           <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2 text-gray-700 mb-4">
-            <ShieldCheck className="w-5 h-5 text-green-600" /> Insurance Providers
+            <ShieldCheck className="w-5 h-5 text-green-600" />
+            Insurance Providers
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {doctorProfile.insurance.map((provider, i) => (
-              <div key={i} className="bg-white rounded-lg px-4 py-2 shadow-sm">
+              <div
+                key={i}
+                className="bg-white rounded-lg px-4 py-2 shadow-sm border flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4 text-green-500" />
                 <p className="text-gray-700">{provider}</p>
               </div>
             ))}
@@ -112,7 +156,8 @@ const DisplayProfile = ({ doctorProfile, onEdit }) => {
       {doctorProfile.verificationStatus && (
         <section className="bg-purple-50 rounded-xl p-4 sm:p-6">
           <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2 text-gray-700 mb-2">
-            <Lock className="w-5 h-5 text-purple-600" /> Verification Status
+            <Lock className="w-5 h-5 text-purple-600" />
+            Verification Status
           </h3>
           <p className="text-gray-600 font-medium">
             {doctorProfile.verificationStatus}
@@ -123,7 +168,7 @@ const DisplayProfile = ({ doctorProfile, onEdit }) => {
   );
 };
 
-// DoctorProfileForm Component
+// DoctorProfileForm Component (state and logic)
 const DoctorProfileForm = () => {
   const {
     createDoctorProfile,
@@ -146,9 +191,12 @@ const DoctorProfileForm = () => {
     insurance: [""],
   });
 
-  // Prefill form for editing
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+
   useEffect(() => {
-    if (doctorProfile && hasProfile) {
+    if (doctorProfile && hasProfile && !isInitialized) {
       setFormData({
         specialization: doctorProfile.specialization || "",
         licenseNumber: doctorProfile.licenseNumber || "",
@@ -164,8 +212,11 @@ const DoctorProfileForm = () => {
           ? doctorProfile.insurance
           : [""],
       });
+      setIsInitialized(true);
     }
-  }, [doctorProfile, hasProfile]);
+  }, [doctorProfile, hasProfile, isInitialized]);
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -211,235 +262,35 @@ const DoctorProfileForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setSaving(true);
       await createDoctorProfile(formData);
-    } catch (err) {
-      console.error(err);
-      alert("Error saving profile");
+      toast("Profile saved successfully");
+    } catch (error) {
+      console.error(error);
+      toast(error.response?.data?.message || "Error saving profile");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const FormContent = () => (
-    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-      {/* Basic Info */}
-      <section className="bg-gray-50 rounded-xl p-4 sm:p-6">
-        <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2 text-gray-700 mb-4">
-          <User className="w-5 h-5 text-blue-600" /> Basic Information
-        </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {/* Text inputs */}
-          {["specialization", "licenseNumber", "clinicLocation", "phoneNumber"].map(
-            (field) => (
-              <div key={field} className="space-y-2">
-                <label
-                  htmlFor={field}
-                  className="block text-sm font-medium text-gray-700 capitalize"
-                >
-                  {field.replace(/([A-Z])/g, " $1").trim()}
-                </label>
-                <input
-                  id={field}
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  disabled={hasProfile && !editMode}
-                  className={`w-full px-3 sm:px-4 py-2 border rounded-lg transition-colors ${
-                    hasProfile && !editMode
-                      ? "bg-gray-100 cursor-not-allowed border-gray-200"
-                      : "bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  }`}
-                />
-              </div>
-            )
-          )}
+  // Consolidate all the props for the Form Content component
+  const formProps = {
+    formData,
+    handleChange,
+    handleEducationChange,
+    addEducation,
+    removeEducation,
+    handleInsuranceChange,
+    addInsurance,
+    removeInsurance,
+    handleSubmit,
+    saving,
+    setEditMode,
+    hasProfile,
+    editMode,
+  };
 
-          {/* Bio field */}
-          <div className="md:col-span-2 space-y-2">
-            <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-              Bio
-            </label>
-            <textarea
-              id="bio"
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              disabled={hasProfile && !editMode}
-              className={`w-full px-3 sm:px-4 py-2 border rounded-lg transition-colors ${
-                hasProfile && !editMode
-                  ? "bg-gray-100 cursor-not-allowed border-gray-200"
-                  : "bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              }`}
-              rows={4}
-            />
-          </div>
-
-          {/* Fees */}
-          <div className="space-y-2">
-            <label htmlFor="fees" className="block text-sm font-medium text-gray-700">
-              Consultation Fees (₹)
-            </label>
-            <input
-              type="number"
-              id="fees"
-              name="fees"
-              value={formData.fees}
-              onChange={handleChange}
-              disabled={hasProfile && !editMode}
-              className={`w-full px-3 sm:px-4 py-2 border rounded-lg transition-colors ${
-                hasProfile && !editMode
-                  ? "bg-gray-100 cursor-not-allowed border-gray-200"
-                  : "bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              }`}
-            />
-          </div>
-
-          {/* Experience */}
-          <div className="space-y-2">
-            <label htmlFor="experienceYears" className="block text-sm font-medium text-gray-700">
-              Experience (Years)
-            </label>
-            <input
-              type="number"
-              id="experienceYears"
-              name="experienceYears"
-              value={formData.experienceYears}
-              onChange={handleChange}
-              disabled={hasProfile && !editMode}
-              className={`w-full px-3 sm:px-4 py-2 border rounded-lg transition-colors ${
-                hasProfile && !editMode
-                  ? "bg-gray-100 cursor-not-allowed border-gray-200"
-                  : "bg-white border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              }`}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Education */}
-      <section className="bg-blue-50 rounded-xl p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-          <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2 text-gray-700">
-            <GraduationCap className="w-5 h-5 text-blue-600" /> Education
-          </h3>
-          <button
-            type="button"
-            onClick={addEducation}
-            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-sm"
-          >
-            <Plus className="w-4 h-4" /> Add Education
-          </button>
-        </div>
-        <div className="space-y-4">
-          {formData.education.map((edu, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200"
-            >
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                <input
-                  placeholder="Degree (e.g., MBBS)"
-                  value={edu.degree}
-                  onChange={(e) =>
-                    handleEducationChange(index, "degree", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-                <input
-                  placeholder="College/University"
-                  value={edu.college}
-                  onChange={(e) =>
-                    handleEducationChange(index, "college", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-                <div className="flex gap-2">
-                  <input
-                    placeholder="Year"
-                    type="number"
-                    value={edu.passoutYear}
-                    onChange={(e) =>
-                      handleEducationChange(index, "passoutYear", e.target.value)
-                    }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                  {formData.education.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeEducation(index)}
-                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Insurance */}
-      <section className="bg-green-50 rounded-xl p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-          <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-2 text-gray-700">
-            <ShieldCheck className="w-5 h-5 text-green-600" /> Insurance Providers
-          </h3>
-          <button
-            type="button"
-            onClick={addInsurance}
-            className="flex items-center gap-2 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors text-sm"
-          >
-            <Plus className="w-4 h-4" /> Add Provider
-          </button>
-        </div>
-        <div className="space-y-3">
-          {formData.insurance.map((provider, index) => (
-            <div key={index} className="flex gap-2">
-              <input
-                placeholder="Insurance Provider Name"
-                value={provider}
-                onChange={(e) => handleInsuranceChange(index, e.target.value)}
-                className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200"
-              />
-              {formData.insurance.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeInsurance(index)}
-                  className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md w-full sm:w-auto"
-        >
-          {loading ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Save className="w-5 h-5" />
-          )}
-          <span>{loading ? "Saving..." : "Save Profile"}</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setEditMode(false)}
-          className="flex items-center justify-center gap-2 bg-gray-200 text-gray-700 px-6 py-2.5 rounded-lg hover:bg-gray-300 transition-all shadow-sm w-full sm:w-auto"
-        >
-          <X className="w-5 h-5" />
-          <span>Cancel</span>
-        </button>
-      </div>
-    </form>
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-4 sm:py-8 px-4">
@@ -459,7 +310,8 @@ const DoctorProfileForm = () => {
 
           {hasProfile ? (
             editMode ? (
-              <FormContent />
+              // Use the external component here, passing all props
+              <DoctorProfileFormContent {...formProps} />
             ) : (
               <DisplayProfile
                 doctorProfile={doctorProfile}
@@ -467,7 +319,8 @@ const DoctorProfileForm = () => {
               />
             )
           ) : (
-            <FormContent />
+            // Use the external component here too
+            <DoctorProfileFormContent {...formProps} />
           )}
         </div>
       </div>

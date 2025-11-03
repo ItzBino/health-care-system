@@ -22,6 +22,9 @@ import MedicalReportForm from "./pages/doctor/MedicalReportForm";
 import DoctorProfile from "./pages/doctor/DoctorProfile";
 import MyAppointments from "./pages/doctor/MyAppointments";
 import ProtectedRoute from "./route/ProtectedRoutes";
+import Services from "./pages/Services";
+import ContactPage from "./pages/ContactUs";
+import { ToastContainer} from 'react-toastify';
 
 const App = () => {
   const [showRegister, setShowRegister] = useState(false);
@@ -41,13 +44,18 @@ const App = () => {
   if (loading) {
     return <div>Loading...</div>;
   }
+  
+ 
 
   return (
     <>
+       <ToastContainer />
       <Navbar setShowRegister={setShowRegister} setShowLogin={setShowLogin} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        <Route path="/services" element={<Services/>} />
+        <Route path="/contact" element={<ContactPage/>} />
 
         <Route path="/settings" element={<Settings />} />
         <Route
