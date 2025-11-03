@@ -264,10 +264,10 @@ const DoctorProfileForm = () => {
     try {
       setSaving(true);
       await createDoctorProfile(formData);
-      toast("Profile saved successfully");
+      toast.success("Profile saved successfully");
     } catch (error) {
       console.error(error);
-      toast(error.response?.data?.message || "Error saving profile");
+      toast.error(error.response?.data?.message || "Error saving profile");
     } finally {
       setSaving(false);
     }

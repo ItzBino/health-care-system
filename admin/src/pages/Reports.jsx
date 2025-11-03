@@ -74,11 +74,11 @@ const Reports = () => {
         prev.map((r) => (r._id === reportId ? res.data.data : r))
       );
       if(res.data.success) {
-        toast("updated successfully");
+        toast.success("updated successfully");
       }
     } catch (err) {
       console.error("Failed to update report status:", err);
-      toast("Failed to update status");
+      toast.error("Failed to update status");
     } finally {
       setUpdatingStatus(null);
     }

@@ -81,12 +81,12 @@ const PatientProfileForm = () => {
   e.preventDefault();
   try {
     await createPatientProfile(profile);
-    toast("Profile saved successfully");
+    toast.success("Profile saved successfully");
     setProfile(profile); // Keep updated data in form
     setIsEditMode(false); // Exit edit mode
   } catch (err) {
     console.error(err);
-    toast(err.response?.data?.message || "Error saving profile");
+    toast.error(err.response?.data?.message || "Error saving profile");
   }
 };
 

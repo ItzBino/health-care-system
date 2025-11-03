@@ -1,41 +1,56 @@
-import jwt from 'jsonwebtoken'
-import { login ,getAllDoctors , getAllPatients,getDoctorProfiles, changeDoctorStatus,updateEmailVerifiedService,getPendingPrescriptions, getMedicalReports,getAllAppointments, updateAppointmentStatusService, updateDoctorAvailabilityAndStatus } from '../services/admin-service.js'
+import jwt from "jsonwebtoken";
+import {
+  login,
+  getAllDoctors,
+  getAllPatients,
+  getDoctorProfiles,
+  changeDoctorStatus,
+  updateEmailVerifiedService,
+  getPendingPrescriptions,
+  getMedicalReports,
+  getAllAppointments,
+  updateAppointmentStatusService,
+  updateDoctorAvailabilityAndStatus,
+} from "../services/admin-service.js";
 
 export const adminLogin = async (req, res) => {
-    try {
-        console.log(req.body)
-        const loginData = await login(req.body)
-        console.log(loginData)
-        const token = jwt.sign({ _id: loginData._id ,role: loginData.role}, process.env.JWT_SECRET);
-       res.cookie("token", token, {
-  httpOnly: true,
-  secure: true, // required for HTTPS (Render uses HTTPS)
-  sameSite: "none", // ✅ allows cross-site cookies (frontend↔backend)
-});
+  try {
+    console.log(req.body);
+    const loginData = await login(req.body);
+    console.log(loginData);
+    const token = jwt.sign(
+      { _id: loginData._id, role: loginData.role },
+      process.env.JWT_SECRET
+    );
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true, // required for HTTPS (Render uses HTTPS)
+      sameSite: "none", // ✅ allows cross-site cookies (frontend↔backend)
+    });
 
-        res.status(200).json({ success: true, data: loginData, token })
-    } catch (error) {
-        res.status(400).json({ success: false, data: error.message })
-    }
-}
+    res.status(200).json({ success: true, data: loginData, token });
+  } catch (error) {
+    res.status(400).json({ success: false, data: error.message });
+  }
+};
 
 export const fetchAllDoctors = async (req, res) => {
-    try {
-        const doctors = await getAllDoctors()
-        res.status(200).json({ success: true, data: doctors })
-    } catch (error) {
-        res.status(400).json({ success: false, data: error.message })
-    }
-}
+  try {
+    const doctors = await getAllDoctors();
+    res.status(200).json({ success: true, data: doctors });
+  } catch (error) {
+    res.status(400).json({ success: false, data: error.message });
+  }
+};
 
 export const fetchAllPatients = async (req, res) => {
-    try {
-        const patient = await getAllPatients()
-        res.status(200).json({ success: true, data: patient })
-    } catch (error) {
-        res.status(400).json({ success: false, data: error.message })
-    }
-}
+  try {
+    const patient = await getAllPatients();
+    res.status(200).json({ success: true, data: patient });
+  } catch (error) {
+    res.status(400).json({ success: false, data: error.message });
+  }
+};
 
 export const updateUserStatus = async (req, res) => {
   try {
@@ -50,7 +65,6 @@ export const updateUserStatus = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
-
 
 export const updateEmailVerified = async (req, res) => {
   try {
@@ -67,7 +81,7 @@ export const updateEmailVerified = async (req, res) => {
 
 export const fetchPendingPrescriptions = async (req, res) => {
   try {
-    const {id} = req.params
+    const { id } = req.params;
     const prescriptions = await getPendingPrescriptions(id);
     res.status(200).json({ success: true, data: prescriptions });
   } catch (error) {
@@ -76,34 +90,33 @@ export const fetchPendingPrescriptions = async (req, res) => {
 };
 
 export const fetchDoctorProfile = async (req, res) => {
-    try {
-        const doctor = await getDoctorProfiles()
-        res.status(200).json({ success: true, data: doctor })
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message })
-    }
-}
+  try {
+    const doctor = await getDoctorProfiles();
+    res.status(200).json({ success: true, data: doctor });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
 
 export const fetchMedicalReport = async (req, res) => {
-    try {
-        const {id } = req.params
+  try {
+    const { id } = req.params;
 
-        const report = await getMedicalReports(id)
-        res.status(200).json({ success: true, data: report })
-        
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message })
-    }
-}
+    const report = await getMedicalReports(id);
+    res.status(200).json({ success: true, data: report });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
 
-export const fetchAppointments = async(req,res)=>{
-    try {
-        const appointments = await getAllAppointments()
-        res.status(200).json({ success: true, data: appointments    })
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message })
-    }
-}
+export const fetchAppointments = async (req, res) => {
+  try {
+    const appointments = await getAllAppointments();
+    res.status(200).json({ success: true, data: appointments });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
 
 export const updateAppointmentStatus = async (req, res) => {
   try {
@@ -129,7 +142,6 @@ export const updateAppointmentStatus = async (req, res) => {
   }
 };
 
-
 export const changeDoctorStatusAndAvailability = async (req, res) => {
   try {
     const { doctorId } = req.params;
@@ -150,12 +162,11 @@ export const changeDoctorStatusAndAvailability = async (req, res) => {
   }
 };
 
-
 export const adminLogout = async (req, res) => {
-    try {
-        res.clearCookie("token")
-        res.status(200).json({ success: true, data: "Logout successfully" })
-    } catch (error) {
-        res.status(400).json({ success: false, data: error.message })
-    }
-}
+  try {
+    res.clearCookie("token");
+    res.status(200).json({ success: true, data: "Logout successfully" });
+  } catch (error) {
+    res.status(400).json({ success: false, data: error.message });
+  }
+};

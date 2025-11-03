@@ -76,8 +76,12 @@ const Prescriptions = () => {
       setPrescriptions((prev) =>
         prev.map((p) => (p._id === prescriptionId ? res.data.data : p))
       );
+      if(res.data.success) {  
+        toast.success("updated successfully");
+      }
     } catch (err) {
       console.error("Failed to update status:", err);
+      toast.error("Failed to update status");
     } finally {
       setUpdatingStatus(null);
     }
@@ -93,12 +97,12 @@ const Prescriptions = () => {
         prev.map((p) => (p._id === prescriptionId ? res.data.data : p))
       );
       if(res.data.success) {
-toast("updated successfully");
+toast.success("updated successfully");
       }
       
     } catch (err) {
       console.error("Failed to update completion:", err);
-      toast("Failed to update");
+      toast.error("Failed to update");
     } finally {
       setUpdatingCompletion(null);
     }
