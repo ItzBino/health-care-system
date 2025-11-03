@@ -1,5 +1,6 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../api/auth";
+import { AuthContext } from "./AuthContext";
 
 export const DoctorContext = createContext();
 
@@ -10,6 +11,7 @@ const DoctorProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // only for initial fetch
   const [patientId, setPatientId] = useState(null);
   const [patientDetails, setPatientDetails] = useState(null);
+  const {token} = useContext(AuthContext);
 
   // ✅ Fetch doctor profile once
   const fetchDoctorProfile = async () => {
@@ -35,7 +37,9 @@ const DoctorProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchDoctorProfile();
+    if(token){
+      fetchDoctorProfile();
+    }
   }, []);
 
   // ✅ Save or update profile (no global loading)

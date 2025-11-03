@@ -104,7 +104,10 @@ const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    refreshUser();
+    if (token) {
+      refreshUser();
+    }
+    
   }, []);
 
 

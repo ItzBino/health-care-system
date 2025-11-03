@@ -1,5 +1,6 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../api/auth.js";
+import { AuthContext } from "./AuthContext.jsx";
 
 export const UserContext = createContext();
 
@@ -11,6 +12,7 @@ const UserProvider = ({ children }) => {
   const [report, setReport] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
+  const {token} = useContext(AuthContext)
   
 
   const fetchDoctors = async () => {
@@ -27,7 +29,10 @@ const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchDoctors();
+    if(token){
+      fetchDoctors();
+    }
+    
   }, []);
 
   const createPatientProfile = async (credentials) => {
@@ -75,7 +80,9 @@ const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
+   if(token){
     fetchPatientProfile();
+   }
   }, []);
 
   const fetchPrescription = async () => {
@@ -94,7 +101,9 @@ const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchPrescription();
+    if(token){
+fetchPrescription();
+    }
   }, []);
 
   const fetchPatientReport = async () => {
@@ -112,7 +121,10 @@ const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchPatientReport();
+    if(token){
+fetchPatientReport();
+    }
+    
   }, []);
 
   const value = {
