@@ -140,25 +140,6 @@ export const updatePatientProfile = async (patientId, body) => {
 
 
 
-//AppointmentCancelling
-// export const cancelAppointment = async (appointmentId) => {
-//   const appointment = await Appointment.findById(appointmentId);
-//   if (!appointment) throw new Error("Appointment not found");
-
-//   appointment.status = "CANCELLED";
-//   appointment.cancelled = true;
-//   await appointment.save();
-
-//   const doctor = await DoctorProfile.findOne({ user: appointment.doctor });
-//   doctor.blockedDates = doctor.blockedDates.filter(
-//     (d) => new Date(d).getTime() !== new Date(appointment.start).getTime()
-//   );
-//   await doctor.save();
-
-//   return appointment;
-// };
-
-
 //get patient appointments
 export const getPatientAppointments = async (patientId) => {
   const now = new Date();

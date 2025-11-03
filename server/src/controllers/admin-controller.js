@@ -88,7 +88,6 @@ export const fetchMedicalReport = async (req, res) => {
     try {
         const {id } = req.params
 
-        console.log("fetching data by id: ",id)
         const report = await getMedicalReports(id)
         res.status(200).json({ success: true, data: report })
         

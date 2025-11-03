@@ -4,10 +4,9 @@ export const doctorAuth = async (req, res, next) => {
     try {
         const {dToken} = req.cookies
         if (!dToken) {
-            throw new Error('Unauthorized')
+            throw new Error('No token found')
         }
         const decoded = jwt.verify(dToken, process.env.JWT_SECRET)
-        console.log(decoded);
         req.doctor = decoded
         next()
     } catch (error) {

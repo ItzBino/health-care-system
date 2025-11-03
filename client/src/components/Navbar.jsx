@@ -200,17 +200,12 @@ const Navbar = ({ setShowRegister }) => {
                       `}
                     >
                       <div className="relative">
-                        {user?.image ? (
+                        {user?.image && (
                           <img
                             className="h-10 w-10 rounded-full object-cover border-2 border-gray-200"
                             src={user.image}
                             alt="Profile"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                            <User className="h-5 w-5 text-white" />
-                          </div>
-                        )}
+                          />)}
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                       </div>
                       <div className="hidden xl:block text-left">
@@ -228,16 +223,12 @@ const Navbar = ({ setShowRegister }) => {
                         {/* User Info Header */}
                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 px-4 py-4 border-b border-gray-100">
                           <div className="flex items-center gap-3">
-                            {user?.image ? (
+                            {user?.image && (
                               <img
                                 className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-md"
                                 src={user.image}
                                 alt="Profile"
                               />
-                            ) : (
-                              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
-                                <User className="h-6 w-6 text-white" />
-                              </div>
                             )}
                             <div className="flex-1">
                               <p className="text-sm font-semibold text-gray-900">{user?.name || "User"}</p>
@@ -366,16 +357,12 @@ const Navbar = ({ setShowRegister }) => {
               <div className="border-t border-gray-200">
                 <div className="px-4 py-4">
                   <div className="flex items-center gap-3 mb-4">
-                    {user?.image ? (
+                    {user?.image && (
                       <img
                         className="h-12 w-12 rounded-full object-cover border-2 border-gray-200"
                         src={user.image}
                         alt="Profile"
                       />
-                    ) : (
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                        <User className="h-6 w-6 text-white" />
-                      </div>
                     )}
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-gray-900">{user?.name || "User"}</p>

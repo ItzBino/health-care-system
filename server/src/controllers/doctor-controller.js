@@ -62,7 +62,6 @@ export const doctorById = async (req, res) => {
   try {
     const doctorId = req.doctor.id;
     const doctor = await getDoctorById(doctorId);
-    console.log(doctor);
     res.status(200).json({ success: true, data: doctor });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
@@ -166,7 +165,11 @@ export const medicalPrescription = async (req, res) => {
 //logout
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("token");
+     res.clearCookie("dToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+    });
     res.status(200).json({ message: "Logout successful" });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

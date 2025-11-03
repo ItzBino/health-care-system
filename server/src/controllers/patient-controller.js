@@ -30,7 +30,6 @@ export const patientRegister = async (req, res) => {
 //Patient login
 export const patientLogin = async (req, res) => {
   try {
-    console.log(req.body);
     const patient = await login(req.body);
     const token = jwt.sign(
       { id: patient._id, role: patient.role },
@@ -69,7 +68,6 @@ export const patientById = async (req, res) => {
   try {
     const patientId = req.patient.id;
     const patient = await getPatientById(patientId);
-    console.log(patient);
     res.status(200).json({ success: true, data: patient });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -161,7 +159,6 @@ export const fetchMedicalReport = async (req, res) => {
   try {
     const patientId = req.patient.id;
     const report = await getMedicalRecords(patientId);
-    console.log(report)
     res.status(200).json({ success: true, data: report });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
@@ -171,7 +168,6 @@ export const fetchMedicalReport = async (req, res) => {
 export const getAllDoctors = async (req, res) => {
   try {
     const doctors = await fetchDoctors();
-    console.log(doctors)
     res.status(200).json({ success: true, data: doctors });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
@@ -181,7 +177,11 @@ export const getAllDoctors = async (req, res) => {
 //logout
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("token");
+     res.clearCookie("pToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+    });
     res.status(200).json({ message: "Logout successful" });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });

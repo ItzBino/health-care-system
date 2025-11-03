@@ -1,5 +1,6 @@
-import { createContext, use, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../api/auth";
+import { AuthContext } from "./AuthContext";
 
 export const AdminContext = createContext()
 
@@ -10,6 +11,7 @@ const AdminContextProvider = ({ children }) => {
     const [appointments,setAppointments] = useState([])
     const [allReports,setAllReports] = useState([])
     const [allPrescriptions,setAllPrescriptions] = useState([])
+    const {aToken} = useContext(AuthContext)
 
     const fetchAllDoctors = async () => {
         const response = await api.get('/api/admin/all-doctors')
@@ -33,7 +35,10 @@ const AdminContextProvider = ({ children }) => {
 
 
     useEffect(() => {
-        fetchDoctorProfiles()
+      if(aToken){
+      fetchDoctorProfiles()
+      }
+        
     },[])
 
     const fetchAllPatient = async () => {
@@ -44,7 +49,9 @@ const AdminContextProvider = ({ children }) => {
     }
 
     useEffect(() => {
+      if(aToken){
         fetchAllPatient()
+      }   
     },[])
 
       const handleStatusChange = async (id, newStatus) => {
@@ -83,7 +90,9 @@ const AdminContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    fetchAllAppointments()
+    if(aToken){
+       fetchAllAppointments()
+    }
   },[])
 
 
@@ -101,7 +110,9 @@ const AdminContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    fetchAllReports()
+    if(aToken){
+       fetchAllReports()
+    }
   },[])
 
   const fetchAllPrescriptions = async () => {
@@ -118,7 +129,9 @@ const AdminContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    fetchAllPrescriptions()
+    if(aToken){
+       fetchAllPrescriptions()
+    }
   },[])
 
 
