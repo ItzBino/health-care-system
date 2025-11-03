@@ -6,12 +6,13 @@ export const adminLogin = async (req, res) => {
         console.log(req.body)
         const loginData = await login(req.body)
         console.log(loginData)
-        const token = jwt.sign({ _id: loginData._id ,role: loginData.role}, process.env.JWT_SECRET, { expiresIn: "1d" });
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict"
-        })
+        const token = jwt.sign({ _id: loginData._id ,role: loginData.role}, process.env.JWT_SECRET);
+       res.cookie("token", token, {
+  httpOnly: true,
+  secure: true, // required for HTTPS (Render uses HTTPS)
+  sameSite: "none", // ✅ allows cross-site cookies (frontend↔backend)
+});
+
         res.status(200).json({ success: true, data: loginData, token })
     } catch (error) {
         res.status(400).json({ success: false, data: error.message })
