@@ -29,7 +29,7 @@ export const getAllDoctors = async () => {
 };
 
 export const getDoctorProfiles = async () => {
-  const doctors = await DoctorProfile.find() // populate user, exclude password
+  const doctors = await DoctorProfile.find().populate("user", "-password") // populate user, exclude password
     .sort({ createdAt: -1 });
   return doctors;
 };

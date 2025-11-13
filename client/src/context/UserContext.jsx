@@ -29,7 +29,6 @@ const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-   
       fetchDoctors();
     
   }, []);

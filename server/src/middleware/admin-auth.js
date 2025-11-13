@@ -4,7 +4,7 @@ export const adminAuth = async (req, res, next) => {
     try {
         const { token } = req.cookies;
         if (!token) {
-            throw new Error("Unauthorized");
+            throw new Error("Token not found");
         }
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.admin = decoded;

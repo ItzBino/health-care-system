@@ -11,7 +11,7 @@ const AdminContextProvider = ({ children }) => {
     const [appointments,setAppointments] = useState([])
     const [allReports,setAllReports] = useState([])
     const [allPrescriptions,setAllPrescriptions] = useState([])
-    const {aToken} = useContext(AuthContext)
+    const {token} = useContext(AuthContext)
 
     const fetchAllDoctors = async () => {
         const response = await api.get('/api/admin/all-doctors')
@@ -22,24 +22,24 @@ const AdminContextProvider = ({ children }) => {
         fetchAllDoctors()
     },[])
 
-  const fetchDoctorProfiles = async () => {
-  console.log("fetchDoctorProfiles() called"); // ✅ check this first
+const fetchDoctorProfiles = async () => {
   try {
-    const response = await api.get('/api/admin/doctor-profiles');
-    console.log("API response:", response.data); // ✅ see what comes back
-    setProfile(response.data.data);
+    const response = await api.get("/api/admin/doctor-profiles");
+    if (response.data.success) {
+      console.log("Profiles fetched:", response.data.data);
+      setProfile(response.data.data);
+    }
   } catch (error) {
-    console.error("Error fetching profiles:", error);
+    console.error("Error fetching doctor profiles:", error);
   }
 };
 
+useEffect(() => {
+  if(token){
+     fetchDoctorProfiles();
+  }
+}, [token]);
 
-    useEffect(() => {
-      if(aToken){
-      fetchDoctorProfiles()
-      }
-        
-    },[])
 
     const fetchAllPatient = async () => {
         console.log("fetchPatientProfiles() called");
@@ -49,10 +49,10 @@ const AdminContextProvider = ({ children }) => {
     }
 
     useEffect(() => {
-      if(aToken){
+      if(token){
         fetchAllPatient()
       }   
-    },[])
+    },[token])
 
       const handleStatusChange = async (id, newStatus) => {
     try {
@@ -90,10 +90,10 @@ const AdminContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    if(aToken){
+    if(token){
        fetchAllAppointments()
     }
-  },[])
+  },[token])
 
 
   const fetchAllReports = async () => {
@@ -110,10 +110,10 @@ const AdminContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    if(aToken){
+    if(token){
        fetchAllReports()
     }
-  },[])
+  },[token])
 
   const fetchAllPrescriptions = async () => {
     try {
@@ -129,10 +129,10 @@ const AdminContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    if(aToken){
+    if(token){
        fetchAllPrescriptions()
     }
-  },[])
+  },[token])
 
 
     const value ={

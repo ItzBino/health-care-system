@@ -11,7 +11,7 @@ router.post("/register",upload.single('image'), patientController.patientRegiste
 router.post("/login", patientController.patientLogin);
 // router.get("/all-patients", patientController.getAllPatients);
 router.get('/',patientAuth,patientRole, patientController.patientById);
-router.get('/doctor-profiles',patientAuth,patientRole, patientController.getAllDoctors);
+router.get('/doctor-profiles', patientController.getAllDoctors);
 router.post('/create-profile',patientAuth,patientRole, patientController.createProfile);
 router.get('/get-profile',patientAuth,patientRole, patientController.getProfile);
 router.get('/:doctorId/booked',patientAuth,patientRole, patientController.getDoctorWithBookedTimes);

@@ -122,7 +122,7 @@ const DoctorDashboard = () => {
               </div>
 
               {!hasProfile && (
-                <NavLink to='/doctor/complete-profile' className="w-full sm:w-auto">
+                <NavLink to='/settings' className="w-full sm:w-auto">
                   <button className="w-full bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-800 transition-colors flex items-center justify-center gap-2">
                     <Edit className="w-4 h-4" />
                     Complete Profile

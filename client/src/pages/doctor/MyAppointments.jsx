@@ -107,7 +107,7 @@ const MyAppointments = () => {
         setErr("Failed to load appointments.");
       }
     } catch (e) {
-      setErr("Something went wrong. Please try again.");
+      console.error(e);
     } finally {
       setLoading(false);
     }

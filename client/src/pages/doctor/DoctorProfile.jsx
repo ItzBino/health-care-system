@@ -61,7 +61,7 @@ const DoctorProfile = () => {
             Please complete your profile to start accepting appointments and
             connect with patients.
           </p>
-          <NavLink to="/doctor/complete-profile">
+          <NavLink to="/settings">
             <button className="px-6 py-2.5 bg-blue-700 text-white rounded-lg font-semibold hover:bg-blue-800 transition-colors">
               Complete Your Profile
             </button>

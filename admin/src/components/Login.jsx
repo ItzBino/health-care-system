@@ -57,7 +57,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen relative overflow-hidden bg-linear-to-br from-blue-50 via-white to-indigo-50">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
@@ -85,7 +85,7 @@ const Login = () => {
       <div className="relative min-h-screen flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-12">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-6 transform hover:scale-105 transition-transform">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-6 transform hover:scale-105 transition-transform">
             <Shield className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
@@ -100,7 +100,7 @@ const Login = () => {
         <div className="w-full max-w-md">
           <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
             {/* Card Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 sm:px-8 py-6">
+            <div className="bg-linear-to-r from-blue-600 to-indigo-600 px-6 sm:px-8 py-6">
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                   <UserCog className="w-6 h-6 text-white" />
@@ -117,7 +117,7 @@ const Login = () => {
               {/* Error Alert */}
               {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm text-red-800">{error}</p>
                   </div>
@@ -211,7 +211,7 @@ const Login = () => {
                     transition-all duration-200 transform
                     ${isLoading 
                       ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                      : 'bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
                     }
                     text-white shadow-md
                     flex items-center justify-center gap-2

@@ -300,7 +300,7 @@ const Doctors = () => {
           >
             {sortedDoctors.map((doctor) => {
               const doctorProfile = profile?.find(
-                (p) => String(p.user) === String(doctor._id)
+                (p) => String(p.user._id) === String(doctor._id)
               );
 
               return (

@@ -118,7 +118,13 @@ const PatientDashboard = () => {
               <StatItem icon={Droplet} label="Blood Group" value={patient?.bloodGroup === 'none' ? 'N/A' : patient?.bloodGroup || 'N/A'} color="text-red-600" />
               <StatItem icon={Calendar} label="Age" value={patient?.dob ? `${calculateAge(patient.dob)} yrs` : 'N/A'} color="text-blue-600" />
               <StatItem icon={Users} label="Gender" value={patient?.gender || 'N/A'} color="text-purple-600" />
-              <StatItem icon={Shield} label="Insurance" value={patient?.insurance?.provider ? 'Active' : 'None'} color="text-green-600" />
+          <StatItem
+  icon={Shield}
+  label="Insurance"
+  value={patient?.insurance?.provider?.trim() ? 'Active' : 'None'}
+  color="text-green-600"
+/>
+
             </div>
           </div>
         </div>

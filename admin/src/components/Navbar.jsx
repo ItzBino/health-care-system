@@ -129,7 +129,7 @@ const Navbar = () => {
 
               {/* Logo */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+                <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div className="hidden sm:block">
@@ -224,7 +224,7 @@ const Navbar = () => {
                     </p>
                     <p className="text-xs text-gray-500">Administrator</p>
                   </div>
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
                     <User className="w-6 h-6 text-white" />
                   </div>
                   <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${

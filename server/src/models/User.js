@@ -6,8 +6,8 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['ADMIN', 'DOCTOR', 'PATIENT'], required: true },
   password: { type: String, required: true, select: false },
   image: { type: String, default: 'https://res.cloudinary.com/dyrukgnno/image/upload/v1758117051/jcfmctqa3y6i0y8rfels.jpg' },   
-  status: { type: String, enum: ['PENDING', 'APPROVED', 'SUSPENDED'], default: 'APPROVED' },
-  emailVerified: { type: Boolean, default: true },
+  status: { type: String, enum: ['PENDING', 'APPROVED', 'SUSPENDED'], default: 'PENDING' },
+  emailVerified: { type: Boolean, default: false },
   lastLogin: Date
 }, { timestamps: true });
 
