@@ -177,7 +177,6 @@ const PrescriptionForm = () => {
         setMedications([{ name: "", dosage: "", frequency: "", duration: "", notes: "" }]);
         setPrescriptionNotes("");
         setFollowUpDate("");
-       alert(res.data.message)
       }
     } catch (err) {
       console.error(err);

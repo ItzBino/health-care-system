@@ -222,7 +222,6 @@ const MedicalReportForm = () => {
         setFollowUpDate("");
         setReportNotes("")
         setSymptoms([""]);
-      alert(res.data.message)
       }
     } catch (err) {
       console.error(err);
